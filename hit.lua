@@ -18,9 +18,12 @@ local function EquipFirstItem()
 end
 
 local function AttackNPC(npc)
+    local virtualUser = game:service('VirtualUser')
     while npc and npc.Parent and npc.Humanoid.Health > 0 do
         if character:FindFirstChildOfClass("Tool") then
-            character:FindFirstChildOfClass("Tool"):Activate()
+            virtualUser:Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+            wait(0.1)
+            virtualUser:Button1Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
         end
         wait(0.1)
     end
@@ -48,8 +51,13 @@ local function AutoFarm()
             character.HumanoidRootPart.CFrame = CFrame.new(closestNPC.HumanoidRootPart.Position + Vector3.new(0, 15, 0))
             wait(0.5) -- Give time for movement
 
-            if (closestNPC.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude <= 15 then
-                AttackNPC(closestNPC)
+            while closestNPC and closestNPC.Parent and closestNPC.Humanoid.Health > 0 do
+                if (closestNPC.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude <= 15 then
+                    AttackNPC(closestNPC)
+                else
+                    character.HumanoidRootPart.CFrame = CFrame.new(closestNPC.HumanoidRootPart.Position + Vector3.new(0, 15, 0))
+                end
+                wait(0.1)
             end
         end
 
