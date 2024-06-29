@@ -42,6 +42,8 @@ local function AutoFarm()
 
             -- Serang NPC sampai mati
             while nearestNPC.Humanoid.Health > 0 do
+                -- Tempatkan pemain di atas NPC setiap saat untuk memastikan posisinya
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(npcPos.X, npcPos.Y + 15, npcPos.Z)
                 wait(0.1)
                 if game.Players.LocalPlayer:FindFirstChildOfClass("Tool") then
                     game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool"):Activate()
