@@ -5,11 +5,13 @@ local CloseButton = Instance.new("TextButton")
 local isMinimized = false
 
 -- Properties
-ScreenGui.Parent = game.CoreGui
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
 Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 Frame.Size = UDim2.new(0, 300, 0, 200)
 Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.Parent = ScreenGui
 
 MinimizeButton.Parent = Frame
 MinimizeButton.Size = UDim2.new(0, 50, 0, 25)
@@ -46,3 +48,29 @@ ExampleLabel.Position = UDim2.new(0, 10, 0, 50)
 ExampleLabel.Text = "Blox Fruits GUI"
 ExampleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 ExampleLabel.BackgroundTransparency = 1
+
+-- Make draggable
+local UserInputService = game:GetService("UserInputService")
+local dragging = false
+local dragInput, mousePos, framePos
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        mousePos = input.Position
+        framePos = Frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - mousePos
+        Frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+    end
+end)
