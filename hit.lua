@@ -19,7 +19,7 @@ end
 
 local function AttackNPC(npc)
     local virtualUser = game:service('VirtualUser')
-    while npc and npc.Parent and npc.Humanoid and npc.Humanoid.Health > 0 do
+    while npc and npc.Parent and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 do
         if character:FindFirstChildOfClass("Tool") then
             virtualUser:Button1Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
             wait(0.1)
