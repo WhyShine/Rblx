@@ -12,12 +12,26 @@ local AutoFarmTab = Window:MakeTab({
 local autoFarmRunning = false
 
 local function AutoFarm()
-    -- Fungsi untuk mendapatkan NPC terdekat
-    local function getNearestNPC()
+    -- Fungsi untuk mengambil quest dari NPC
+    local function takeQuest()
+        for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+            if npc:FindFirstChild("QuestGiver") then
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame
+                wait(1) -- Beri waktu untuk mencapai NPC
+                fireproximityprompt(npc.QuestGiver.ProximityPrompt) -- Berinteraksi dengan NPC
+                wait(2) -- Beri waktu untuk menerima quest
+                return true
+            end
+        end
+        return false
+    end
+
+    -- Fungsi untuk mendapatkan NPC terdekat yang namanya memiliki angka
+    local function getNearestNPCWithNumber()
         local nearestNPC = nil
         local closestDistance = math.huge
         for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
-            if npc:FindFirstChild("HumanoidRootPart") and npc.Humanoid.Health > 0 then
+            if npc:FindFirstChild("HumanoidRootPart") and npc.Humanoid.Health > 0 and string.match(npc.Name, "%d") then
                 local distance = (npc.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).magnitude
                 if distance < closestDistance then
                     closestDistance = distance
@@ -29,6 +43,13 @@ local function AutoFarm()
     end
 
     while autoFarmRunning do
+        -- Ambil quest terlebih dahulu
+        if not takeQuest() then
+            print("Gagal mengambil quest")
+            wait(5)
+            continue
+        end
+
         -- Dapatkan item pertama di inventori dan pakai
         local inventory = game.Players.LocalPlayer.Backpack:GetChildren()
         if #inventory > 0 then
@@ -36,7 +57,7 @@ local function AutoFarm()
             game.Players.LocalPlayer.Character.Humanoid:EquipTool(firstItem)
         end
 
-        local nearestNPC = getNearestNPC()
+        local nearestNPC = getNearestNPCWithNumber()
         while nearestNPC and autoFarmRunning do
             local npcPos = nearestNPC.HumanoidRootPart.Position
             -- Tempatkan pemain di atas NPC
@@ -53,7 +74,7 @@ local function AutoFarm()
             end
 
             -- Cari NPC aktif lain setelah NPC ini mati atau interaksi selesai
-            nearestNPC = getNearestNPC()
+            nearestNPC = getNearestNPCWithNumber()
         end
 
         wait(1) -- Tunggu sebentar sebelum mencari NPC lagi
