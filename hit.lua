@@ -43,11 +43,13 @@ local function AutoFarm()
     end
 
     while autoFarmRunning do
-        -- Ambil quest terlebih dahulu
-        if not takeQuest() then
-            print("Gagal mengambil quest")
-            wait(5)
-            continue
+        -- Ambil quest terlebih dahulu jika belum diambil
+        if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("Quest") then
+            if not takeQuest() then
+                print("Gagal mengambil quest")
+                wait(5)
+                continue
+            end
         end
 
         -- Dapatkan item pertama di inventori dan pakai
