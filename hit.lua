@@ -1,49 +1,48 @@
--- Roblox Script for Blox Fruit
--- This script is for educational purposes only
+-- Inisialisasi Variabel
+local player = game.Players.LocalPlayer
+local char = player.Character
+local hum = char:WaitForChild("Humanoid")
+local hrp = char:WaitForChild("HumanoidRootPart")
+local inventory = player.Backpack
+local activeWeapon = inventory:FindFirstChildOfClass("Tool") or char:FindFirstChildOfClass("Tool")
 
--- Define the range for hitting NPCs
-local hitRange = 30
+-- Fungsi untuk memperbesar area serangan
+local function extendHitbox(hitbox, multiplier)
+    local size = hitbox.Size
+    hitbox.Size = Vector3.new(size.X * multiplier, size.Y * multiplier, size.Z * multiplier)
+end
 
--- Function to get all NPCs within a certain range
-local function getNPCsInRange(player, range)
-    local npcsInRange = {}
-    local playerPosition = player.Character.HumanoidRootPart.Position
-    
-    for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
-        if npc:FindFirstChild("HumanoidRootPart") then
-            local npcPosition = npc.HumanoidRootPart.Position
-            local distance = (playerPosition - npcPosition).Magnitude
-            if distance <= range then
-                table.insert(npcsInRange, npc)
+-- Fungsi untuk teleport ke NPC terdekat
+local function teleportToNPC(npc)
+    hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 15, 0)
+end
+
+-- Fungsi untuk menyerang NPC
+local function attackNPC(npc)
+    while npc.Humanoid.Health > 0 do
+        hum:MoveTo(npc.HumanoidRootPart.Position)
+        wait(0.1)
+        local attackButton = game:GetService("VirtualUser")
+        attackButton:CaptureController()
+        attackButton:ClickButton1(Vector2.new(0, 0))
+        wait(0.1)
+    end
+end
+
+-- Fungsi utama untuk Auto Farm
+local function autoFarm()
+    while wait(1) do
+        for _, npc in pairs(game.Workspace.Enemies:GetChildren()) do
+            if npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
+                extendHitbox(npc.HumanoidRootPart, 40)
+                if activeWeapon and hum.Health > 0 then
+                    teleportToNPC(npc)
+                    attackNPC(npc)
+                end
             end
         end
     end
-    
-    return npcsInRange
 end
 
--- Function to deal damage to an NPC
-local function dealDamageToNPC(npc, damage)
-    if npc:FindFirstChild("Humanoid") then
-        npc.Humanoid:TakeDamage(damage)
-    end
-end
-
--- Main function to check inventory and apply damage
-local function checkInventoryAndHit(player)
-    local inventory = player.Backpack:GetChildren()
-    for _, item in pairs(inventory) do
-        if item.Name == "YourSpecialItemName" then
-            local npcsInRange = getNPCsInRange(player, hitRange)
-            for _, npc in pairs(npcsInRange) do
-                dealDamageToNPC(npc, 50) -- Change 50 to the amount of damage you want to deal
-            end
-            break
-        end
-    end
-end
-
--- Bind the function to the player's mouse click
-game.Players.LocalPlayer:GetMouse().Button1Down:Connect(function()
-    checkInventoryAndHit(game.Players.LocalPlayer)
-end)
+-- Mulai Auto Farm
+autoFarm()
