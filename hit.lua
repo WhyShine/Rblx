@@ -40,13 +40,28 @@ local function AutoFarm()
             -- Tempatkan pemain di atas NPC
             game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(npcPos.X, npcPos.Y + 15, npcPos.Z)
 
-            -- Serang NPC sampai mati
+            -- Serang NPC sampai mati atau NPC tidak bisa diserang
+            local previousHealth = nearestNPC.Humanoid.Health
+            local isStuck = false
             while nearestNPC.Humanoid.Health > 0 do
                 -- Tempatkan pemain di atas NPC setiap saat untuk memastikan posisinya
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(npcPos.X, npcPos.Y + 15, npcPos.Z)
                 wait(0.1)
                 if game.Players.LocalPlayer:FindFirstChildOfClass("Tool") then
                     game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool"):Activate()
+                end
+
+                -- Cek apakah NPC bisa diserang atau tidak
+                if nearestNPC.Humanoid.Health == previousHealth then
+                    if not isStuck then
+                        isStuck = true
+                        wait(1) -- Beri waktu sedikit untuk memastikan apakah NPC benar-benar tidak bisa diserang
+                    else
+                        break -- Keluar dari loop jika NPC tidak bisa diserang
+                    end
+                else
+                    previousHealth = nearestNPC.Humanoid.Health
+                    isStuck = false
                 end
             end
         end
