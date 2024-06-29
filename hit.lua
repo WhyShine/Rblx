@@ -19,13 +19,15 @@ end
 
 -- Fungsi untuk menyerang NPC
 local function attackNPC(npc)
-    while npc.Humanoid.Health > 0 do
+    while npc.Humanoid.Health > 0 and hum.Health > 0 do
         hum:MoveTo(npc.HumanoidRootPart.Position)
         wait(0.1)
-        local attackButton = game:GetService("VirtualUser")
-        attackButton:CaptureController()
-        attackButton:ClickButton1(Vector2.new(0, 0))
-        wait(0.1)
+        if (hrp.Position - npc.HumanoidRootPart.Position).Magnitude <= 15 then
+            local attackButton = game:GetService("VirtualUser")
+            attackButton:CaptureController()
+            attackButton:ClickButton1(Vector2.new(0, 0))
+            wait(0.1)
+        end
     end
 end
 
