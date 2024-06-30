@@ -12,21 +12,7 @@ local AutoFarmTab = Window:MakeTab({
 local autoFarmRunning = false
 
 local function AutoFarm()
-    -- Fungsi untuk mengambil quest dari NPC
-    local function takeQuest()
-        for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
-            if npc:FindFirstChild("QuestGiver") then
-                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame
-                wait(1) -- Beri waktu untuk mencapai NPC
-                fireproximityprompt(npc.QuestGiver.ProximityPrompt) -- Berinteraksi dengan NPC
-                wait(2) -- Beri waktu untuk menerima quest
-                return true
-            end
-        end
-        return false
-    end
-
-    -- Fungsi untuk mendapatkan NPC terdekat yang namanya memiliki angka
+    -- Fungsi untuk mendapatkan NPC terdekat yang namanya memiliki angka (level)
     local function getNearestNPCWithNumber()
         local nearestNPC = nil
         local closestDistance = math.huge
@@ -43,15 +29,6 @@ local function AutoFarm()
     end
 
     while autoFarmRunning do
-        -- Ambil quest terlebih dahulu jika belum diambil
-        if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("Quest") then
-            if not takeQuest() then
-                print("Gagal mengambil quest")
-                wait(5)
-                continue
-            end
-        end
-
         -- Dapatkan item pertama di inventori dan pakai
         local inventory = game.Players.LocalPlayer.Backpack:GetChildren()
         if #inventory > 0 then
