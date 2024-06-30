@@ -55,15 +55,18 @@ function AutoFarm()
                         local distance = (humanoidRootPart.Position - npcPosition).Magnitude
 
                         if distance <= 40 then
-                            humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
-
-                            while npc.Humanoid.Health > 0 and enabled do
+                            -- Pastikan karakter berada di workspace sebelum melakukan tween
+                            if character:IsDescendantOf(game.Workspace) then
                                 humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
-                                if character:FindFirstChild(tool.Name) then
-                                    local screenPoint = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(npcPosition)
-                                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
-                                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
-                                    wait(clickCooldown)
+
+                                while npc.Humanoid.Health > 0 and enabled do
+                                    humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
+                                    if character:FindFirstChild(tool.Name) then
+                                        local screenPoint = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(npcPosition)
+                                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
+                                        game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
+                                        wait(clickCooldown)
+                                    end
                                 end
                             end
                         end
