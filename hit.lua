@@ -10,6 +10,7 @@ local AutoFarmTab = Window:MakeTab({
 
 local enabled = false
 local clickCooldown = 0.1 -- Default cooldown
+local tweenSpeed = 50 -- Default tween speed
 
 AutoFarmTab:AddToggle({
     Name = "Enable Auto Farm",
@@ -34,10 +35,24 @@ AutoFarmTab:AddSlider({
     end
 })
 
+AutoFarmTab:AddSlider({
+    Name = "Tween Speed",
+    Min = 25,
+    Max = 100,
+    Default = 50,
+    Increment = 5,
+    ValueName = "studs/second",
+    Callback = function(Value)
+        tweenSpeed = Value
+    end
+})
+
 function moveToPosition(character, position)
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     local tweenService = game:GetService("TweenService")
-    local tweenInfo = TweenInfo.new((humanoidRootPart.Position - position).Magnitude / 50, Enum.EasingStyle.Linear)
+    local distance = (humanoidRootPart.Position - position).Magnitude
+    local time = distance / tweenSpeed
+    local tweenInfo = TweenInfo.new(time, Enum.EasingStyle.Linear)
     local tween = tweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(position)})
     tween:Play()
     tween.Completed:Wait()
