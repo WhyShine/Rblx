@@ -10,7 +10,6 @@ local AutoFarmTab = Window:MakeTab({
 
 local enabled = false
 local clickCooldown = 0.1 -- Default cooldown
-local clickCooldownIndicator
 
 AutoFarmTab:AddToggle({
     Name = "Enable Auto Farm",
@@ -32,9 +31,6 @@ AutoFarmTab:AddSlider({
     ValueName = "seconds",
     Callback = function(Value)
         clickCooldown = Value
-        if clickCooldownIndicator then
-            clickCooldownIndicator:Set("Cooldown: " .. Value .. "s")
-        end
     end
 })
 
