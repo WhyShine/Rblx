@@ -9,6 +9,8 @@ local AutoFarmTab = Window:MakeTab({
 })
 
 local enabled = false
+local clickCooldown = 0.1 -- Default cooldown
+local clickCooldownIndicator
 
 AutoFarmTab:AddToggle({
     Name = "Enable Auto Farm",
@@ -19,6 +21,21 @@ AutoFarmTab:AddToggle({
             AutoFarm()
         end
     end    
+})
+
+AutoFarmTab:AddSlider({
+    Name = "Click Cooldown",
+    Min = 0.05,
+    Max = 1,
+    Default = 0.1,
+    Increment = 0.05,
+    ValueName = "seconds",
+    Callback = function(Value)
+        clickCooldown = Value
+        if clickCooldownIndicator then
+            clickCooldownIndicator:Set("Cooldown: " .. Value .. "s")
+        end
+    end
 })
 
 function AutoFarm()
@@ -46,10 +63,12 @@ function AutoFarm()
 
                             while npc.Humanoid.Health > 0 and enabled do
                                 humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
-                                local screenPoint = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(npcPosition)
-                                game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
-                                game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
-                                wait(0.1)
+                                if character:FindFirstChild(tool.Name) then
+                                    local screenPoint = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(npcPosition)
+                                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
+                                    game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
+                                    wait(clickCooldown)
+                                end
                             end
                         end
                     end
