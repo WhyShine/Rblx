@@ -22,38 +22,42 @@ AutoFarmTab:AddToggle({
 })
 
 function AutoFarm()
-    while enabled do
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        local inventory = player.Backpack:GetChildren()
-        
-        if #inventory > 0 then
-            local tool = inventory[1]
-            character.Humanoid:EquipTool(tool)
+    spawn(function()
+        while enabled do
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+            local inventory = player.Backpack:GetChildren()
 
-            for _, npc in pairs(game.Workspace.Enemies:GetChildren()) do
-                if npc:FindFirstChild("HumanoidRootPart") and npc.Humanoid.Health > 0 then
-                    local npcHumanoidRootPart = npc.HumanoidRootPart
-                    local npcPosition = npcHumanoidRootPart.Position
-                    local distance = (humanoidRootPart.Position - npcPosition).magnitude
+            if #inventory > 0 then
+                local tool = inventory[1]
+                if not character:FindFirstChild(tool.Name) then
+                    player.Character.Humanoid:EquipTool(tool)
+                end
 
-                    if distance <= 40 then
-                        humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
+                for _, npc in pairs(game.Workspace.Enemies:GetChildren()) do
+                    if npc:FindFirstChild("HumanoidRootPart") and npc.Humanoid.Health > 0 then
+                        local npcHumanoidRootPart = npc.HumanoidRootPart
+                        local npcPosition = npcHumanoidRootPart.Position
+                        local distance = (humanoidRootPart.Position - npcPosition).Magnitude
 
-                        while npc.Humanoid.Health > 0 and enabled do
+                        if distance <= 40 then
                             humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
-                            local screenPoint = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(npcPosition)
-                            game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
-                            game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
-                            wait(0.1)
+
+                            while npc.Humanoid.Health > 0 and enabled do
+                                humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
+                                local screenPoint = game:GetService("Workspace").CurrentCamera:WorldToViewportPoint(npcPosition)
+                                game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
+                                game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
+                                wait(0.1)
+                            end
                         end
                     end
                 end
             end
+            wait(1)
         end
-        wait(1)
-    end
+    end)
 end
 
 OrionLib:Init()
