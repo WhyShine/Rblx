@@ -70,7 +70,7 @@ local function AutoFarm()
                 -- Tempatkan pemain di atas NPC setiap saat untuk memastikan posisinya
                 game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(npcPos.X, npcPos.Y + 15, npcPos.Z)
                 wait(0.1)
-                if game.Players.LocalPlayer:FindFirstChildOfClass("Tool") then
+                if game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool") then
                     game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool"):Activate()
                 end
             end
@@ -86,16 +86,22 @@ end
 AutoFarmTab:AddButton({
     Name = "Start Auto Farm",
     Callback = function()
-        autoFarmRunning = true
-        AutoFarm()
+        if not autoFarmRunning then
+            autoFarmRunning = true
+            spawn(AutoFarm)
+        end
     end
 })
 
--- Fungsi untuk menghentikan Auto Farm
-local function stopAutoFarm()
-    autoFarmRunning = false
-end
+AutoFarmTab:AddButton({
+    Name = "Stop Auto Farm",
+    Callback = function()
+        autoFarmRunning = false
+    end
+})
 
-Window:OnClose(stopAutoFarm)
+Window:OnClose(function()
+    autoFarmRunning = false
+end)
 
 OrionLib:Init()
