@@ -48,50 +48,6 @@ local enabled = false
 local clickCooldown = 0.1 -- Default cooldown
 local tweenSpeed = 50 -- Default tween speed
 
-AutoFarmTab:AddToggle({
-    Name = "Enable Auto Farm",
-    Default = false,
-    Callback = function(Value)
-        enabled = Value
-        if enabled then
-            log("Auto Farm enabled")
-            AutoFarm()
-        else
-            log("Auto Farm disabled")
-        end
-    end    
-})
-
-AutoFarmTab:AddTextbox({
-    Name = "Click Cooldown",
-    Default = "0.1",
-    TextDisappear = false,
-    Callback = function(Value)
-        local numValue = tonumber(Value)
-        if numValue then
-            clickCooldown = math.clamp(numValue, 0.05, 1)
-            log("Click Cooldown set to " .. tostring(clickCooldown))
-        else
-            log("Invalid Click Cooldown value")
-        end
-    end
-})
-
-AutoFarmTab:AddTextbox({
-    Name = "Tween Speed",
-    Default = "50",
-    TextDisappear = false,
-    Callback = function(Value)
-        local numValue = tonumber(Value)
-        if numValue then
-            tweenSpeed = math.clamp(numValue, 25, 100)
-            log("Tween Speed set to " .. tostring(tweenSpeed))
-        else
-            log("Invalid Tween Speed value")
-        end
-    end
-})
-
 local function moveToPosition(character, position)
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     local tweenService = game:GetService("TweenService")
@@ -184,5 +140,49 @@ local function AutoFarm()
         end
     end)
 end
+
+AutoFarmTab:AddToggle({
+    Name = "Enable Auto Farm",
+    Default = false,
+    Callback = function(Value)
+        enabled = Value
+        if enabled then
+            log("Auto Farm enabled")
+            AutoFarm()
+        else
+            log("Auto Farm disabled")
+        end
+    end    
+})
+
+AutoFarmTab:AddTextbox({
+    Name = "Click Cooldown",
+    Default = "0.1",
+    TextDisappear = false,
+    Callback = function(Value)
+        local numValue = tonumber(Value)
+        if numValue then
+            clickCooldown = math.clamp(numValue, 0.05, 1)
+            log("Click Cooldown set to " .. tostring(clickCooldown))
+        else
+            log("Invalid Click Cooldown value")
+        end
+    end
+})
+
+AutoFarmTab:AddTextbox({
+    Name = "Tween Speed",
+    Default = "50",
+    TextDisappear = false,
+    Callback = function(Value)
+        local numValue = tonumber(Value)
+        if numValue then
+            tweenSpeed = math.clamp(numValue, 25, 100)
+            log("Tween Speed set to " .. tostring(tweenSpeed))
+        else
+            log("Invalid Tween Speed value")
+        end
+    end
+})
 
 OrionLib:Init()
