@@ -1,48 +1,119 @@
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local MinimizeButton = Instance.new("TextButton")
-local CloseButton = Instance.new("TextButton")
-local isMinimized = false
+-- Memuat OrionLib
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
--- Properties
-ScreenGui.Parent = game.CoreGui
+-- Membuat Window GUI
+local Window = OrionLib:MakeWindow({Name = "Blox Fruits Script", HidePremium = false, SaveConfig = true, ConfigFolder = "BloxFruitsConfig"})
 
-Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Frame.Size = UDim2.new(0, 300, 0, 200)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+-- Membuat Tab
+local Tab = Window:MakeTab({
+    Name = "Main",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
 
-MinimizeButton.Parent = Frame
-MinimizeButton.Size = UDim2.new(0, 50, 0, 25)
-MinimizeButton.Position = UDim2.new(1, -110, 0, 0)
-MinimizeButton.Text = "_"
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+-- Menambahkan Section
+local Section = Tab:AddSection({
+    Name = "Console Log"
+})
 
-CloseButton.Parent = Frame
-CloseButton.Size = UDim2.new(0, 50, 0, 25)
-CloseButton.Position = UDim2.new(1, -50, 0, 0)
-CloseButton.Text = "X"
-CloseButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
+-- Menambahkan Console Log
+local ConsoleLog = Section:AddLabel("Console Log:")
+local function updateConsoleLog(text)
+    ConsoleLog:Set(text)
+end
 
--- Functions
-MinimizeButton.MouseButton1Click:Connect(function()
-    if isMinimized then
-        Frame.Size = UDim2.new(0, 300, 0, 200)
-        isMinimized = false
-    else
-        Frame.Size = UDim2.new(0, 300, 0, 25)
-        isMinimized = true
+-- Menambahkan Notifikasi
+local function sendNotification(title, text)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = title;
+        Text = text;
+        Duration = 5;
+    })
+end
+
+-- Fungsi untuk mendapatkan informasi item yang dikenakan
+local function getEquippedItemsInfo()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local equippedItems = {}
+
+    for _, item in pairs(character:GetChildren()) do
+        if item:IsA("Tool") or item:IsA("Accessory") then
+            table.insert(equippedItems, {
+                Name = item.Name,
+                ID = item:GetAttribute("ID") or "N/A",
+                ClassName = item.ClassName
+            })
+        end
+    end
+
+    return equippedItems
+end
+
+-- Fungsi untuk mendapatkan informasi interaksi dengan NPC
+local function getNPCInteractions()
+    -- Dummy implementation, replace with actual logic
+    local interactions = {}
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    for _, npc in pairs(workspace.NPCs:GetChildren()) do
+        if (npc:IsA("Model") or npc:IsA("Part")) and (npc:FindFirstChild("HumanoidRootPart")) then
+            local distance = (npc.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
+            if distance < 10 then -- adjust the distance as necessary
+                table.insert(interactions, {
+                    Name = npc.Name,
+                    Position = npc.HumanoidRootPart.Position,
+                    ClassName = npc.ClassName
+                })
+            end
+        end
+    end
+
+    return interactions
+end
+
+-- Menyimpan log interaksi
+local interactionLog = {}
+
+-- Fungsi untuk memperbarui log interaksi
+local function updateInteractionLog()
+    local player = game.Players.LocalPlayer
+
+    -- Dapatkan informasi item yang dikenakan
+    local equippedItems = getEquippedItemsInfo()
+    for _, item in pairs(equippedItems) do
+        local itemInfo = string.format("Equipped Item - Name: %s, ID: %s, ClassName: %s", item.Name, item.ID, item.ClassName)
+        table.insert(interactionLog, {time = tick(), info = itemInfo})
+        updateConsoleLog(itemInfo)
+        sendNotification("Interaction", itemInfo)
+    end
+
+    -- Dapatkan informasi interaksi dengan NPC
+    local npcInteractions = getNPCInteractions()
+    for _, interaction in pairs(npcInteractions) do
+        local interactionInfo = string.format("Interacted with NPC - Name: %s, Position: %s, ClassName: %s", interaction.Name, tostring(interaction.Position), interaction.ClassName)
+        table.insert(interactionLog, {time = tick(), info = interactionInfo})
+        updateConsoleLog(interactionInfo)
+        sendNotification("Interaction", interactionInfo)
+    end
+
+    -- Hapus log yang lebih dari 30 detik
+    local currentTime = tick()
+    for i = #interactionLog, 1, -1 do
+        if currentTime - interactionLog[i].time > 30 then
+            table.remove(interactionLog, i)
+        end
+    end
+end
+
+-- Jadwalkan updateInteractionLog setiap 3 detik
+spawn(function()
+    while true do
+        updateInteractionLog()
+        wait(3)
     end
 end)
 
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Example elements (add your own features)
-local ExampleLabel = Instance.new("TextLabel")
-ExampleLabel.Parent = Frame
-ExampleLabel.Size = UDim2.new(0, 280, 0, 50)
-ExampleLabel.Position = UDim2.new(0, 10, 0, 50)
-ExampleLabel.Text = "Blox Fruits GUI"
-ExampleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-ExampleLabel.BackgroundTransparency = 1
+-- Membuat GUI
+OrionLib:Init()
