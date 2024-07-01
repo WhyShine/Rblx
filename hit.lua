@@ -27,10 +27,6 @@ logBox = LogTab:AddTextbox({
 })
 
 local function log(message)
-    logText = logText .. "\n" .. message
-    if logBox and logBox.Object then
-        logBox.Object.Text = logText
-    end
     Notification.new("<Color=Yellow>" .. message .. "<Color=/>"):Display()
 end
 
@@ -41,15 +37,14 @@ end
 LogTab:AddButton({
     Name = "Show All Logs",
     Callback = function()
-        if logBox and logBox.Object then
-            logBox.Object.Text = logText
-        end
+        Notification.new("<Color=Yellow>All logs displayed in the console.<Color=/>"):Display()
+        print(logText)
     end
 })
 
 local enabled = false
 local attackCooldown = 0.1 -- Default cooldown
-local tweenSpeed = 50 -- Default tween speed
+local tweenSpeed = 75 -- Default tween speed for faster movement
 local fastAttack = false -- Fast Attack toggle
 local fastAttackSpeed = 0.05 -- Default fast attack speed
 local attackRangeIncrease = 50 -- Increase attack range by 50 units
@@ -91,7 +86,7 @@ local function findNearestNPC()
     return nearestNPC
 end
 
-local function attackNPC(npc, tool, humanoidRootPart, npcPosition)
+local function attackNPC(npc, tool, humanoidRootPart)
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
 
@@ -104,7 +99,7 @@ local function attackNPC(npc, tool, humanoidRootPart, npcPosition)
             character.Humanoid:EquipTool(tool)
         end
 
-        humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
+        humanoidRootPart.CFrame = CFrame.new(npc.HumanoidRootPart.Position + Vector3.new(0, 15, 0))
 
         local args = {
             [1] = "Combat",
@@ -162,7 +157,7 @@ local function AutoFarm()
                         if (humanoidRootPart.Position - npcPosition).Magnitude > 15 then
                             moveToPosition(character, npcPosition)
                         end
-                        attackNPC(npc, tool, humanoidRootPart, npcPosition)
+                        attackNPC(npc, tool, humanoidRootPart)
                         npc = findNearestNPC()
                     end
                 end
@@ -206,7 +201,7 @@ AutoFarmTab:AddTextbox({
 
 AutoFarmTab:AddTextbox({
     Name = "Tween Speed",
-    Default = "50",
+    Default = "75",
     TextDisappear = false,
     Callback = function(Value)
         local numValue = tonumber(Value)
