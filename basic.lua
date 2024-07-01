@@ -50,6 +50,30 @@ local function getEquippedItemsInfo()
     return equippedItems
 end
 
+-- Fungsi untuk mendapatkan informasi NPC yang berinteraksi
+local function getNPCInfo(npc)
+    return {
+        Name = npc.Name,
+        ClassName = npc.ClassName,
+        Position = npc.Position,
+        Attributes = npc:GetAttributes()
+    }
+end
+
+-- Fungsi untuk mencatat interaksi dengan NPC
+local function logNPCInteraction(npc, interactionType)
+    local npcInfo = getNPCInfo(npc)
+    local infoText = string.format("Interacted with NPC: %s (Class: %s, Position: %s), Interaction Type: %s", 
+                                   npcInfo.Name, npcInfo.ClassName, tostring(npcInfo.Position), interactionType)
+    
+    for attrName, attrValue in pairs(npcInfo.Attributes) do
+        infoText = infoText .. string.format(", %s: %s", attrName, tostring(attrValue))
+    end
+    
+    updateConsoleLog(infoText)
+    sendNotification("NPC Interaction", infoText)
+end
+
 -- Menambahkan Button untuk menjalankan script
 Section:AddButton({
     Name = "Run Script",
@@ -96,6 +120,34 @@ Section:AddButton({
         if not success then
             updateConsoleLog("Failed to Fetch Equipped Items: " .. errorMessage)
             sendNotification("Inventory", "Failed to Fetch Equipped Items: " .. errorMessage)
+        end
+    end
+})
+
+-- Menambahkan Button untuk mencatat interaksi dengan NPC
+Section:AddButton({
+    Name = "Log NPC Interaction",
+    Callback = function()
+        local success, errorMessage = pcall(function()
+            updateConsoleLog("Logging NPC Interaction...")
+            sendNotification("NPC Interaction", "Logging NPC Interaction...")
+            
+            -- Contoh interaksi dengan NPC
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local npc = workspace:FindFirstChild("SomeNPC") -- Ganti dengan NPC yang ingin dicatat interaksinya
+            
+            if npc then
+                logNPCInteraction(npc, "Talked")
+            else
+                updateConsoleLog("NPC not found.")
+                sendNotification("NPC Interaction", "NPC not found.")
+            end
+        end)
+        
+        if not success then
+            updateConsoleLog("Failed to Log NPC Interaction: " .. errorMessage)
+            sendNotification("NPC Interaction", "Failed to Log NPC Interaction: " .. errorMessage)
         end
     end
 })
