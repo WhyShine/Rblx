@@ -2,7 +2,18 @@ local Notification = require(game:GetService("ReplicatedStorage").Notification)
 
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
-local Window = OrionLib:MakeWindow({Name = "Blox Fruit GUI", HidePremium = false, SaveConfig = true, ConfigFolder = "BloxFruitConfig"})
+local Window = OrionLib:MakeWindow({
+    Name = "Blox Fruit GUI",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "BloxFruitConfig",
+    IntroEnabled = false,
+    IntroText = "Welcome",
+    DefaultSettings = {
+        Position = UDim2.new(0.5, 0, 0.5, 0), -- Center position
+        Size = UDim2.new(0.25, 0, 0.35, 0) -- Smaller size
+    }
+})
 
 local AutoFarmTab = Window:MakeTab({
     Name = "Auto Farm",
@@ -27,6 +38,10 @@ logBox = LogTab:AddTextbox({
 })
 
 local function log(message)
+    logText = logText .. "\n" .. message
+    if logBox and logBox.Object then
+        logBox.Object.Text = logText
+    end
     Notification.new("<Color=Yellow>" .. message .. "<Color=/>"):Display()
 end
 
@@ -37,7 +52,7 @@ end
 LogTab:AddButton({
     Name = "Show All Logs",
     Callback = function()
-        Notification.new("<Color=Yellow>All logs displayed in the console.<Color=/>"):Display()
+        log("All logs displayed in the console.")
         print(logText)
     end
 })
