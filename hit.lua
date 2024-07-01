@@ -1,6 +1,6 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
-
 local Notification = require(game:GetService("ReplicatedStorage").Notification)
+
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 local Window = OrionLib:MakeWindow({Name = "Blox Fruit GUI", HidePremium = false, SaveConfig = true, ConfigFolder = "BloxFruitConfig"})
 
@@ -15,7 +15,7 @@ local LogTab = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-Notification.new("<Color=Yellow>Welcome To Bloxy!<Color=/>"):Display()
+
 local logText = ""
 local logBox
 
@@ -31,6 +31,7 @@ local function log(message)
     if logBox and logBox.Object then
         logBox.Object.Text = logText
     end
+    Notification.new("<Color=Yellow>" .. message .. "<Color=/>"):Display()
 end
 
 local function errorHandler(err)
