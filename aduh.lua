@@ -75,18 +75,39 @@ end
 
 -- Menyimpan log interaksi
 local interactionLog = {}
+local lastInteractionInfo = nil
+local sameInteractionCount = 0
 
 -- Fungsi untuk memperbarui log interaksi
 local function updateInteractionLog()
     local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
 
-    -- Dapatkan informasi item yang dikenakan
-    local equippedItems = getEquippedItemsInfo()
-    for _, item in pairs(equippedItems) do
-        local itemInfo = string.format("Equipped Item - Name: %s, ID: %s, ClassName: %s", item.Name, item.ID, item.ClassName)
-        table.insert(interactionLog, {time = tick(), info = itemInfo})
-        updateConsoleLog(itemInfo)
-        sendNotification("Interaction", itemInfo)
+    -- Cek apakah pemain menggunakan tool
+    local isUsingTool = false
+    for _, item in pairs(character:GetChildren()) do
+        if item:IsA("Tool") and item.Parent == character then
+            isUsingTool = true
+            break
+        end
+    end
+
+    if isUsingTool then
+        -- Dapatkan informasi item yang dikenakan
+        local equippedItems = getEquippedItemsInfo()
+        for _, item in pairs(equippedItems) do
+            local itemInfo = string.format("Equipped Item - Name: %s, ID: %s, ClassName: %s", item.Name, item.ID, item.ClassName)
+            table.insert(interactionLog, {time = tick(), info = itemInfo})
+            updateConsoleLog(itemInfo)
+            sendNotification("Interaction", itemInfo)
+            -- Cek apakah informasi ini sama dengan interaksi sebelumnya
+            if itemInfo == lastInteractionInfo then
+                sameInteractionCount = sameInteractionCount + 1
+            else
+                sameInteractionCount = 1
+                lastInteractionInfo = itemInfo
+            end
+        end
     end
 
     -- Dapatkan informasi interaksi dengan NPC
@@ -96,6 +117,13 @@ local function updateInteractionLog()
         table.insert(interactionLog, {time = tick(), info = interactionInfo})
         updateConsoleLog(interactionInfo)
         sendNotification("Interaction", interactionInfo)
+        -- Cek apakah informasi ini sama dengan interaksi sebelumnya
+        if interactionInfo == lastInteractionInfo then
+            sameInteractionCount = sameInteractionCount + 1
+        else
+            sameInteractionCount = 1
+            lastInteractionInfo = interactionInfo
+        end
     end
 
     -- Hapus log yang lebih dari 30 detik
@@ -107,11 +135,22 @@ local function updateInteractionLog()
     end
 end
 
--- Jadwalkan updateInteractionLog setiap 3 detik
-spawn(function()
-    while true do
-        updateInteractionLog()
-        wait(3)
+-- Fungsi untuk menangani interaksi pengguna
+local function handleUserInteraction()
+    updateInteractionLog()
+end
+
+-- Menghubungkan interaksi pengguna dengan fungsi handleUserInteraction
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    -- Abaikan input jika berasal dari game GUI
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        -- Jeda berdasarkan jumlah interaksi yang sama
+        if sameInteractionCount >= 4 then
+            wait(7)
+        else
+            wait(5)
+        end
+        handleUserInteraction()
     end
 end)
 
