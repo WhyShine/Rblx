@@ -35,6 +35,8 @@ ConsoleLog.Position = UDim2.new(0, 10, 0, 0)
 ConsoleLog.TextYAlignment = Enum.TextYAlignment.Top
 ConsoleLog.TextWrapped = true
 ConsoleLog.Text = ""
+ConsoleLog.TextColor3 = Color3.new(1, 1, 1)
+ConsoleLog.BackgroundTransparency = 1
 ConsoleLog.Parent = ConsoleLogFrame
 
 -- Fungsi untuk memperbarui teks Console Log
