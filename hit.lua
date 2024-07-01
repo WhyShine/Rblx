@@ -1,5 +1,7 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
+local Notification = require(game:GetService("ReplicatedStorage").Notification)
+
 local Window = OrionLib:MakeWindow({Name = "Blox Fruit GUI", HidePremium = false, SaveConfig = true, ConfigFolder = "BloxFruitConfig"})
 
 local AutoFarmTab = Window:MakeTab({
@@ -13,7 +15,7 @@ local LogTab = Window:MakeTab({
     Icon = "rbxassetid://4483345998",
     PremiumOnly = false
 })
-
+Notification.new("<Color=Yellow>Welcome To Bloxy!<Color=/>"):Display()
 local logText = ""
 local logBox
 
@@ -45,8 +47,12 @@ LogTab:AddButton({
 })
 
 local enabled = false
-local clickCooldown = 0.1 -- Default cooldown
+local attackCooldown = 0.1 -- Default cooldown
 local tweenSpeed = 50 -- Default tween speed
+local fastAttack = false -- Fast Attack toggle
+local fastAttackSpeed = 0.05 -- Default fast attack speed
+local attackRangeIncrease = 50 -- Increase attack range by 50 units
+local damageMultiplier = 12 -- Multiply damage by 12 times
 
 local function moveToPosition(character, position)
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -87,7 +93,7 @@ end
 local function attackNPC(npc, tool, humanoidRootPart, npcPosition)
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
-    
+
     while npc.Humanoid.Health > 0 and enabled do
         if not humanoidRootPart or not npc.HumanoidRootPart then
             break
@@ -99,16 +105,43 @@ local function attackNPC(npc, tool, humanoidRootPart, npcPosition)
 
         humanoidRootPart.CFrame = CFrame.new(npcPosition + Vector3.new(0, 15, 0))
 
-        local screenPoint = game:GetService("Workspace").CurrentCamera.ViewportSize / 2
-        game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, true, game, 0)
-        game:GetService("VirtualInputManager"):SendMouseButtonEvent(screenPoint.X, screenPoint.Y, 0, false, game, 0)
-        wait(clickCooldown)
+        local args = {
+            [1] = "Combat",
+            [2] = "MouseClick"
+        }
+
+        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+
+        npc.Humanoid.Health = npc.Humanoid.Health - (npc.Humanoid.MaxHealth / damageMultiplier)
+
+        if fastAttack then
+            wait(fastAttackSpeed)
+        else
+            wait(attackCooldown)
+        end
     end
     log("Attacked NPC: " .. npc.Name)
 end
 
+local function preventDamage()
+    spawn(function()
+        while enabled do
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+
+            if humanoid then
+                humanoid.Health = humanoid.MaxHealth
+            end
+
+            wait(0.1)
+        end
+    end)
+end
+
 local function AutoFarm()
     spawn(function()
+        preventDamage()
         while enabled do
             local status, err = pcall(function()
                 local player = game.Players.LocalPlayer
@@ -119,7 +152,7 @@ local function AutoFarm()
                 if #inventory > 0 then
                     local tool = inventory[1]
                     if not character:FindFirstChild(tool.Name) then
-                        character.Humanoid:EquipTool(tool)
+                        player.Character.Humanoid:EquipTool(tool)
                     end
 
                     local npc = findNearestNPC()
@@ -156,16 +189,16 @@ AutoFarmTab:AddToggle({
 })
 
 AutoFarmTab:AddTextbox({
-    Name = "Click Cooldown",
+    Name = "Attack Cooldown",
     Default = "0.1",
     TextDisappear = false,
     Callback = function(Value)
         local numValue = tonumber(Value)
         if numValue then
-            clickCooldown = math.clamp(numValue, 0.05, 1)
-            log("Click Cooldown set to " .. tostring(clickCooldown))
+            attackCooldown = math.clamp(numValue, 0.05, 1)
+            log("Attack Cooldown set to " .. tostring(attackCooldown))
         else
-            log("Invalid Click Cooldown value")
+            log("Invalid Attack Cooldown value")
         end
     end
 })
@@ -181,6 +214,30 @@ AutoFarmTab:AddTextbox({
             log("Tween Speed set to " .. tostring(tweenSpeed))
         else
             log("Invalid Tween Speed value")
+        end
+    end
+})
+
+AutoFarmTab:AddToggle({
+    Name = "Fast Attack",
+    Default = false,
+    Callback = function(Value)
+        fastAttack = Value
+        log("Fast Attack set to " .. tostring(fastAttack))
+    end    
+})
+
+AutoFarmTab:AddTextbox({
+    Name = "Fast Attack Speed",
+    Default = "0.05",
+    TextDisappear = false,
+    Callback = function(Value)
+        local numValue = tonumber(Value)
+        if numValue then
+            fastAttackSpeed = math.clamp(numValue, 0.01, 0.1)
+            log("Fast Attack Speed set to " .. tostring(fastAttackSpeed))
+        else
+            log("Invalid Fast Attack Speed value")
         end
     end
 })
