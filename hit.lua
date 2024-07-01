@@ -28,20 +28,23 @@ local LogTab = Window:MakeTab({
 })
 
 local logText = ""
-local logBox
-
-logBox = LogTab:AddTextbox({
-    Name = "Log Box",
-    Default = "",
-    TextDisappear = false,
-    Callback = function() end
+local logFrame = LogTab:AddSection({
+    Name = "Log Box"
 })
+
+local logBox = Instance.new("TextBox")
+logBox.Size = UDim2.new(1, 0, 1, 0)
+logBox.TextWrapped = true
+logBox.TextYAlignment = Enum.TextYAlignment.Top
+logBox.TextXAlignment = Enum.TextXAlignment.Left
+logBox.ClearTextOnFocus = false
+logBox.BackgroundTransparency = 1
+logBox.Text = logText
+logBox.Parent = logFrame.Frame
 
 local function log(message)
     logText = logText .. "\n" .. message
-    if logBox and logBox.Object then
-        logBox.Object.Text = logText
-    end
+    logBox.Text = logText
     Notification.new("<Color=Yellow>" .. message .. "<Color=/>"):Display()
 end
 
