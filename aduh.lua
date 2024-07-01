@@ -2,7 +2,12 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 -- Membuat Window GUI
-local Window = OrionLib:MakeWindow({Name = "Blox Fruits Script", HidePremium = false, SaveConfig = true, ConfigFolder = "BloxFruitsConfig"})
+local Window = OrionLib:MakeWindow({
+    Name = "Blox Fruits Script",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "BloxFruitsConfig"
+})
 
 -- Membuat Tab
 local Tab = Window:MakeTab({
@@ -52,7 +57,6 @@ end
 
 -- Fungsi untuk mendapatkan informasi interaksi dengan NPC
 local function getNPCInteractions()
-    -- Dummy implementation, replace with actual logic
     local interactions = {}
     local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
