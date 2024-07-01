@@ -21,19 +21,26 @@ local Section = Tab:AddSection({
     Name = "Console Log"
 })
 
--- Membuat TextBox untuk menampilkan log
-local ConsoleLog = Section:AddTextbox({
-    Name = "Console Log",
-    Default = "",
-    TextDisappear = false,
-    ClearTextOnFocus = false,
-    MultiLine = true
-})
+-- Membuat ScrollingFrame untuk Console Log
+local ConsoleLogFrame = Instance.new("ScrollingFrame")
+ConsoleLogFrame.Size = UDim2.new(1, 0, 0, 300) -- Adjust the size as needed
+ConsoleLogFrame.CanvasSize = UDim2.new(0, 0, 1, 0) -- Allow vertical scrolling
+ConsoleLogFrame.ScrollBarThickness = 10
+ConsoleLogFrame.Parent = Section.Container
+
+-- Membuat TextLabel untuk menampilkan log di dalam ScrollingFrame
+local ConsoleLog = Instance.new("TextLabel")
+ConsoleLog.Size = UDim2.new(1, -20, 1, 0)
+ConsoleLog.Position = UDim2.new(0, 10, 0, 0)
+ConsoleLog.TextYAlignment = Enum.TextYAlignment.Top
+ConsoleLog.TextWrapped = true
+ConsoleLog.Text = ""
+ConsoleLog.Parent = ConsoleLogFrame
 
 -- Fungsi untuk memperbarui teks Console Log
 local function updateConsoleLog(text)
-    local currentText = ConsoleLog:Get()
-    ConsoleLog:Set(currentText .. "\n" .. text)
+    ConsoleLog.Text = ConsoleLog.Text .. "\n" .. text
+    ConsoleLogFrame.CanvasSize = UDim2.new(0, 0, 0, ConsoleLog.TextBounds.Y)
 end
 
 -- Menambahkan Notifikasi
