@@ -1,33 +1,60 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
-for i,v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
+for i, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
 	v:Disable()
 end
 
 local tools = {}
 
-for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
 	if v:IsA("Tool") then
 		table.insert(tools, v.Name)
 	end
 end
 
----autofarm Level
----lv 0-10
-function CheckQuest()
+local Auto_Farm = false
+local SelectToolWeapon = ""
+local SelectWeaponBoss = ""
+local MagnetActive = false
+local Farm_Mode = CFrame.new(0, 20, 0)
+local PosMon = nil
+
+function CheckLevel()
 	local Lv = game.Players.LocalPlayer.Data.Level.Value
 	if Lv == 0 or Lv <= 10 then
 		Ms = "Bandit [Lv. 5]"
-		NM = "Bandit"
-		LQ = 1
-		NQ = "BanditQuest1"
-		CQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+		NameQuest = "BanditQuest1"
+		QuestLv = 1
+		NameMon = "Bandit"
+		CFrameQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+		CFrameMon = nil
+	elseif Lv == 10 or Lv <= 14 or SelectMonster == "Monkey [Lv. 14]" then
+		Ms = "Monkey [Lv. 14]"
+		NameQuest = "JungleQuest"
+		QuestLv = 1
+		NameMon = "Monkey"
+		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
+		CFrameMon = CFrame.new(-1448.1446533203, 50.851993560791, 63.60718536377)
+	elseif Lv == 15 or Lv <= 29 or SelectMonster == "Gorilla [Lv. 20]" then
+		Ms = "Gorilla [Lv. 20]"
+		NameQuest = "JungleQuest"
+		QuestLv = 2
+		NameMon = "Gorilla"
+		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
+		CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
+	elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then
+		Ms = "Pirate [Lv. 35]"
+		NameQuest = "BuggyQuest1"
+		QuestLv = 1
+		NameMon = "Pirate"
+		CFrameQ = CFrame.new(-1140.1761474609, 4.752049446106, 3827.4057617188)
+		CFrameMon = CFrame.new(-1201.0881347656, 40.628940582275, 3857.5966796875)
 	end
 end
 
 function TP(P)
 	local Distance = (P.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-	local Speed
+	local Speed = 300
 	if Distance < 10 then
 		Speed = 1000
 	elseif Distance < 170 then
@@ -35,45 +62,76 @@ function TP(P)
 		Speed = 350
 	elseif Distance < 1000 then
 		Speed = 350
-	elseif Distance >= 1000 then
-		Speed = 300
 	end
 	game:GetService("TweenService"):Create(
 		game.Players.LocalPlayer.Character.HumanoidRootPart,
-		TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
+		TweenInfo.new(Distance / Speed, Enum.EasingStyle.Linear),
 		{CFrame = P}
 	):Play()
 end
 
+function Click()
+	game:GetService'VirtualUser':CaptureController()
+	game:GetService'VirtualUser':Button1Down(Vector2.new(1280, 672))
+end
+
 spawn(function()
 	while task.wait() do
-		if _G.AutoFarm then
-			CheckQuest()
-			if game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == false then
-				TP(CQ)
-				task.wait(0.9)
-				game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest",NQ,LQ)
-			elseif game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible == true then
-				for i,v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-					if v.Name == Ms then
-						TP(v.HumanoidRootPart.CFrame * CFrame.new(0,20,0))
-						v.HumanoidRootPart.Size = Vector3.new(60,60,60)
+		if Auto_Farm then
+			if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
+				MagnetActive = false
+				CheckLevel()
+				TP(CFrameQ)
+				if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 4 then
+					wait(1.1)
+					CheckLevel()
+					if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 20 then
+						game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
+						game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetSpawnPoint")
+					else
+						TP(CFrameQ)
 					end
 				end
+			elseif game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
+				pcall(function()
+					CheckLevel()
+					if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
+						for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+							if v.Name == Ms and v:FindFirstChild("Humanoid") then
+								if v.Humanoid.Health > 0 then
+									repeat game:GetService("RunService").Heartbeat:wait()
+										if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
+											if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) then
+												EquipWeapon(SelectToolWeapon)
+												TP(v.HumanoidRootPart.CFrame * Farm_Mode)
+												v.HumanoidRootPart.CanCollide = false
+												v.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
+												game:GetService("VirtualUser"):CaptureController()
+												game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
+												PosMon = v.HumanoidRootPart.CFrame
+												MagnetActive = true
+											else
+												MagnetActive = false    
+												game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+											end
+										else
+											MagnetActive = false
+											CheckLevel()
+											TP(CFrameMon)
+										end
+									until not v.Parent or v.Humanoid.Health <= 0 or not Auto_Farm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(v.Name)
+								end
+							end
+						end
+					else
+						MagnetActive = false
+						CheckLevel()
+						TP(CFrameMon)
+					end
+				end)
 			end
 		end
 	end
-end)
-
-spawn(function()
-	game:GetService("RunService").RenderStepped:Connect(function()
-		if _G.AutoFarm then
-			pcall(function()
-				game:GetService'VirtualUser':CaptureController()
-				game:GetService'VirtualUser':Button1Down(Vector2.new(0,1,0,1))
-			end)
-		end
-	end)
 end)
 
 local Window = OrionLib:MakeWindow({Name = "BloxFruits Script Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
@@ -94,34 +152,33 @@ local toolDropdown = MainSection:AddDropdown({
 	Default = "",
 	Options = tools,
 	Callback = function(weapon)
+		SelectToolWeapon = weapon
 	end
 })
 
 game.Players.LocalPlayer.Backpack.DescendantAdded:Connect(function(tool)
-	local toolName = tool.Name
 	if tool:IsA("Tool") then
-		table.insert(tools, toolName)
+		table.insert(tools, tool.Name)
 		toolDropdown:Refresh(tools)
 	end
 end)
 
 game.Players.LocalPlayer.Backpack.DescendantRemoving:Connect(function(tool)
-	local toolName = tool.Name
 	if tool:IsA("Tool") then
-		for i,v in pairs(tools) do
-			if v == toolName then
+		for i, v in pairs(tools) do
+			if v == tool.Name then
 				table.remove(tools, i)
 			end
 		end	
+		toolDropdown:Refresh(tools)
 	end
-	toolDropdown:Refresh(tools)
 end)
 
 MainSection:AddToggle({
 	Name = "AutoFarm",
 	Default = false,
 	Callback = function(state)
-		_G.AutoFarm = state
+		Auto_Farm = state
 	end
 })
 
@@ -145,90 +202,30 @@ local StatsSection = Stats:AddSection({
 	Name = "Stats"
 })
 
-StatsSection:AddToggle({
-	Name = "Meele",
-	Default = false,
-	Callback = function(state)
-		_G.autoMeeleStats = state
-		while _G.autoMeeleStats do
-			local args = {
-				[1] = "AddPoint",
-				[2] = "Melee",
-				[3] = 1
-			}
-			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-			task.wait(30)
+local function AddAutoStatToggle(name, stat)
+	StatsSection:AddToggle({
+		Name = name,
+		Default = false,
+		Callback = function(state)
+			_G["auto" .. stat .. "Stats"] = state
+			while _G["auto" .. stat .. "Stats"] do
+				local args = {
+					[1] = "AddPoint",
+					[2] = stat,
+					[3] = 1
+				}
+				game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+				task.wait(30)
+			end
 		end
-	end
-})
+	})
+end
 
-StatsSection:AddToggle({
-	Name = "Defense",
-	Default = false,
-	Callback = function(state)
-		_G.autoDefenseStats = state
-		while _G.autoDefenseStats do
-			local args = {
-				[1] = "AddPoint",
-				[2] = "Defense",
-				[3] = 1
-			}
-			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-			task.wait(30)
-		end
-	end
-})
-
-StatsSection:AddToggle({
-	Name = "Sword",
-	Default = false,
-	Callback = function(state)
-		_G.autoSword = state
-		while _G.autoSword do
-			local args = {
-				[1] = "AddPoint",
-				[2] = "Sword",
-				[3] = 1
-			}
-			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-			task.wait(30)
-		end
-	end
-})
-
-StatsSection:AddToggle({
-	Name = "Gun",
-	Default = false,
-	Callback = function(state)
-		_G.autoGun = state
-		while _G.autoGun do
-			local args = {
-				[1] = "AddPoint",
-				[2] = "Gun",
-				[3] = 1
-			}
-			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-			task.wait(30)
-		end
-	end
-})
-
-StatsSection:AddToggle({
-	Name = "Devil Fruit",
-	Default = false,
-	Callback = function(state)
-		_G.autoDevilFruit = state
-		while _G.autoDevilFruit do
-			local args = {
-				[1] = "AddPoint",
-				[2] = "Demon Fruit",
-				[3] = 1
-			}
-			game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-			task.wait(30)
-		end
-	end
-})
+AddAutoStatToggle("Meele", "Melee")
+AddAutoStatToggle("Defense", "Defense")
+AddAutoStatToggle("Sword", "Sword")
+AddAutoStatToggle("Gun", "Gun")
+AddAutoStatToggle("Devil Fruit", "Demon Fruit")
 
 ---Teleport
 local Teleport = Window:MakeTab({
@@ -241,122 +238,21 @@ local TeleportSection = Teleport:AddSection({
 	Name = "Teleport"
 })
 
-TeleportSection:AddButton({
-	Name = "Pirate Island",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(1041.8861083984375, 16.273563385009766, 1424.93701171875)}):Play()
-	end
-})
+local function AddTeleportButton(name, position)
+	TeleportSection:AddButton({
+		Name = name,
+		Callback = function()
+			TP(position)
+		end
+	})
+end
 
-TeleportSection:AddButton({
-	Name = "Marine Island",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-2896.6865234375, 41.488861083984375, 2009.27490234375)}):Play()
-	end
-})
+AddTeleportButton("Second Sea", CFrame.new(-41.248611450195, 20.44778251648, 2993.0021972656))
+AddTeleportButton("Middle Town", CFrame.new(-690.34057617188, 15.094252586365, 1583.8342285156))
+AddTeleportButton("Colosseum", CFrame.new(-1836.5816650391, 7.2894344329834, 1350.6179199219))
+AddTeleportButton("Sky Island 1", CFrame.new(-4846.14990234375, 717.6875610351562, -2622.3544921875))
+AddTeleportButton("Sky Island 2", CFrame.new(-7891.73681640625, 5545.5283203125, -380.2913818359375))
+AddTeleportButton("Under Water City", CFrame.new(61163.8515625, 11.75231647491455, 1818.8211669921875))
+AddTeleportButton("Prison", CFrame.new(4851.97265625, 5.651928424835205, 734.74658203125))
 
-TeleportSection:AddButton({
-	Name = "Colosseum",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-1541.0882568359375, 7.389348983764648, -2987.40576171875)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Desert",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(1094.3209228515625, 6.569626808166504, 4231.6357421875)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Fountain City",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(5529.7236328125, 429.35748291015625, 4245.5498046875)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Jungle",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-1615.1883544921875, 36.85209655761719, 150.80490112304688)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Marine Fort",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-4846.14990234375, 20.652048110961914, 4393.65087890625)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Middle Town",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-705.99755859375, 7.852255344390869, 1547.5216064453125)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Prison",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(4841.84423828125, 5.651970863342285, 741.329833984375)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Pirate Village",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-1146.42919921875, 4.752060890197754, 3818.503173828125)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Sky 1",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-4967.8369140625, 717.6719970703125, -2623.84326171875)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Sky 2",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-7876.0771484375, 5545.58154296875, -381.19927978515625)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Snow",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(1100.361328125, 5.290674209594727, -1151.5418701171875)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Under Water",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(61135.29296875, 18.47164535522461, 1597.6827392578125)}):Play()
-	end
-})
-
-TeleportSection:AddButton({
-	Name = "Magma Village",
-	Callback = function()
-		tweenService, tweenInfo = game:GetService("TweenService"), TweenInfo.new(45, Enum.EasingStyle.Linear)
-		tweenService:Create(game:GetService("Players")["LocalPlayer"].Character.HumanoidRootPart, tweenInfo, {CFrame = CFrame.new(-5248.27197265625, 8.699088096618652, 8452.890625)}):Play()
-	end
-})
+OrionLib:Init()
