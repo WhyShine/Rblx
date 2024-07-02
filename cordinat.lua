@@ -20,6 +20,7 @@ local FarmOffset = CFrame.new(20, 20, 0)
 local MonsterPosition = nil
 local Type = 1
 local Y = 20
+local UseMagnet = false
 
 local function EquipWeapon(ToolSe)
     local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe)
@@ -154,16 +155,6 @@ pcall(function()
     end
 end)
 
-local function MagnetMonsters(questInfo)
-    for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-        if enemy.Name == questInfo.monster and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-            enemy.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
-            enemy.HumanoidRootPart.CanCollide = false
-            enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
-        end
-    end
-end
-
 spawn(function()
     while task.wait() do
         if AutoFarm then
@@ -197,9 +188,6 @@ spawn(function()
                                             MonsterPosition = enemy.HumanoidRootPart.CFrame
                                             MagnetActive = true
                                             wait(0.2)  -- Add a small delay between attacks
-                                            if MagnetActive then
-                                                MagnetMonsters(questInfo)
-                                            end
                                         else
                                             MagnetActive = false    
                                             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
@@ -208,11 +196,21 @@ spawn(function()
                                         MagnetActive = false
                                         TP(questInfo.monsterCFrame)
                                     end
+                                    -- Magnet Feature
+                                    if UseMagnet then
+                                        for _, mob in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                                            if mob.Name == questInfo.monster and mob:FindFirstChild("HumanoidRootPart") then
+                                                mob.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
+                                            end
+                                        end
+                                    end
                                 until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster)
                             end
                         end
                     else
-                        TP(questInfo.monsterCFrame)
+                        if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
+                            TP(questInfo.monsterCFrame)
+                        end
                     end
                 end)
             end
@@ -251,10 +249,10 @@ MainSection:AddToggle({
 })
 
 MainSection:AddToggle({
-    Name = "Magnet",
+    Name = "Use Magnet",
     Default = false,
     Callback = function(value)
-        MagnetActive = value
+        UseMagnet = value
     end
 })
 
