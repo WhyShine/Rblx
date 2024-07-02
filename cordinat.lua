@@ -21,6 +21,56 @@ local MonsterPosition = nil
 local Type = 1
 local Y = 20
 local UseMagnet = false
+local SelectMonster = "" -- Deklarasi SelectMonster
+local SafeMode = false
+
+local RigC = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework)
+local VirtualUser = game:GetService('VirtualUser')
+local kkii = require(game.ReplicatedStorage.Util.CameraShaker)
+
+spawn(function()
+    game:GetService('RunService').Heartbeat:connect(function()
+        if _G.FastAtttk then
+            pcall(function()
+                RigC.activeController.timeToNextAttack = 0
+                RigC.activeController.attacking = false
+                RigC.activeController.blocking = false
+                RigC.activeController.timeToNextAttack = 0
+                RigC.activeController.timeToNextBlock = 0
+                RigC.activeController.increment = 3
+                RigC.activeController.hitboxMagnitude = 100
+                game.Players.LocalPlayer.Character.Stun.Value = 0
+                game.Players.LocalPlayer.Character.Humanoid.Sit = false
+
+                VirtualUser:CaptureController()
+                VirtualUser:Button1Down(Vector2.new(1280, 672))
+                kkii:Stop()
+            end)
+        end
+    end)
+end)
+
+spawn(function()
+    for i = 1, math.huge do
+        game:GetService('RunService').Heartbeat:wait()
+        if _G.FastAtttk then
+            VirtualUser:CaptureController()
+            VirtualUser:Button1Down(Vector2.new(1280, 672))
+        end
+    end
+end)
+
+spawn(function()
+    pcall(function()
+        while wait() do
+            if SafeMode then
+                local X = math.random(1, 100)
+                local Z = math.random(1, 100)
+                TP(CFrame.new(X, game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.Y, Z))
+            end
+        end
+    end)
+end)
 
 local function EquipWeapon(ToolSe)
     local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe)
@@ -106,7 +156,7 @@ local function TP2(P1)
         TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
         {CFrame = P1}
     ):Play()
-    Clip = true
+    local Clip = true -- Tambahkan deklarasi ini
     wait(Distance/Speed)
     Clip = false
 end
@@ -179,164 +229,31 @@ spawn(function()
                                 repeat game:GetService("RunService").Heartbeat:wait()
                                     if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
                                         if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, questInfo.monsterName) then
-                                            EquipWeapon(selectedWeapon)
-                                            TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
-                                            enemy.HumanoidRootPart.CanCollide = false
-                                            enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
-                                            game:GetService("VirtualUser"):CaptureController()
-                                            game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
-                                            MonsterPosition = enemy.HumanoidRootPart.CFrame
-                                            MagnetActive = true
-                                            wait(0.2)  -- Add a small delay between attacks
-                                        else
-                                            MagnetActive = false    
-                                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-                                        end
-                                    else
-                                        MagnetActive = false
-                                        TP(questInfo.monsterCFrame)
-                                    end
-                                    -- Magnet Feature
-                                    if UseMagnet then
-                                        for _, mob in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                                            if mob.Name == questInfo.monster and mob:FindFirstChild("HumanoidRootPart") then
-                                                mob.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
+                                            if enemy.Humanoid.Health > 0 then
+                                                if UseMagnet then
+                                                    MagnetActive = true
+                                                    enemy.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * FarmOffset
+                                                else
+                                                    TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
+                                                end
+                                            elseif enemy.Humanoid.Health <= 0 or not enemy.Parent or not AutoFarm then
+                                                break
                                             end
+                                            EquipWeapon(selectedWeapon)
+                                            Click()
+                                        else
+                                            MagnetActive = false
+                                            TP(questInfo.questCFrame)
                                         end
                                     end
-                                until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible
+                                until enemy.Humanoid.Health <= 0 or not enemy.Parent or not AutoFarm
                             end
                         end
-                    else
-                        TP(questInfo.monsterCFrame)
                     end
                 end)
             end
         end
     end
 end)
-
-spawn(function()
-    game:GetService("RunService").Heartbeat:Connect(function()
-        if AutoFarm or SafeMode or PlayerHunt or KillPlayer or AutoRainbow or AutoCitizen or AutoFarmBoss or FarmAllBoss or Elite or AutoThird or AutoBartilo or AutoRengoku or Auto_Bone or AutoEcto or AutoFarmObservation or Auto_Farm or FarmMasteryGun or FarmMasteryFruit or _G.Auto_indra_Hop or _G.Auto_Dark_Dagger_Hop or _G.AutoDonSwan_Hop or _G.Pole_Hop or Core or noclip or AutoEvoRace or TPChest or NextIsland or RaidSuperhuman or _G.AutoRaid or AutoFarmBoss or SelectFarm or Clip or HolyTorch or AutoFarmSelectMonster or AutoLowRaid then
-            if not game:GetService("Workspace"):FindFirstChild("LOL") then
-                local LOL = Instance.new("Part")
-                LOL.Name = "LOL"
-                LOL.Parent = game.Workspace
-                LOL.Anchored = true
-                LOL.Transparency = 1
-                LOL.Size = Vector3.new(30, -0.5, 30)
-            elseif game:GetService("Workspace"):FindFirstChild("LOL") then
-                game.Workspace["LOL"].CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -3.6, 0)
-            end
-        else
-            if game:GetService("Workspace"):FindFirstChild("LOL") then
-                game:GetService("Workspace"):FindFirstChild("LOL"):Destroy()
-            end
-        end
-    end)
-end)
-
-local Window = OrionLib:MakeWindow({Name = "Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
-
--- Main Tab
-local Main = Window:MakeTab({
-    Name = "Main",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local MainSection = Main:AddSection({
-    Name = "Main"
-})
-
-local toolDropdown = MainSection:AddDropdown({
-    Name = "Weapon",
-    Default = "",
-    Options = tools,
-    Callback = function(value)
-        selectedWeapon = value
-    end
-})
-
-MainSection:AddToggle({
-    Name = "Auto Farm",
-    Default = false,
-    Callback = function(value)
-        AutoFarm = value
-    end
-})
-
-MainSection:AddToggle({
-    Name = "Use Magnet",
-    Default = false,
-    Callback = function(value)
-        UseMagnet = value
-    end
-})
-
--- Stats Tab
-local Stats = Window:MakeTab({
-    Name = "Stats",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local StatsSection = Stats:AddSection({
-    Name = "Stats"
-})
-
-local function AddAutoStatToggle(name, stat)
-    StatsSection:AddToggle({
-        Name = name,
-        Default = false,
-        Callback = function(state)
-            _G["auto" .. stat .. "Stats"] = state
-            while _G["auto" .. stat .. "Stats"] do
-                local args = {
-                    [1] = "AddPoint",
-                    [2] = stat,
-                    [3] = 1
-                }
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-                task.wait(30)
-            end
-        end
-    })
-end
-
-AddAutoStatToggle("Meele", "Melee")
-AddAutoStatToggle("Defense", "Defense")
-AddAutoStatToggle("Sword", "Sword")
-AddAutoStatToggle("Gun", "Gun")
-AddAutoStatToggle("Devil Fruit", "Demon Fruit")
-
--- Teleport Tab
-local Teleport = Window:MakeTab({
-    Name = "Teleport",
-    Icon = "rbxassetid://4483345998",
-    PremiumOnly = false
-})
-
-local TeleportSection = Teleport:AddSection({
-    Name = "Teleport"
-})
-
-local function AddTeleportButton(name, position)
-    TeleportSection:AddButton({
-        Name = name,
-        Callback = function()
-            TP(position)
-        end
-    })
-end
-
-AddTeleportButton("Second Sea", CFrame.new(-41.248611450195, 20.44778251648, 2993.0021972656))
-AddTeleportButton("Middle Town", CFrame.new(-690.34057617188, 15.094252586365, 1583.8342285156))
-AddTeleportButton("Colosseum", CFrame.new(-1836.5816650391, 7.2894344329834, 1350.6179199219))
-AddTeleportButton("Sky Island 1", CFrame.new(-4846.14990234375, 717.6875610351562, -2622.3544921875))
-AddTeleportButton("Sky Island 2", CFrame.new(-7891.73681640625, 5545.5283203125, -380.2913818359375))
-AddTeleportButton("Under Water City", CFrame.new(61163.8515625, 11.75231647491455, 1818.8211669921875))
-AddTeleportButton("Prison", CFrame.new(4851.97265625, 5.651928424835205, 734.74658203125))
 
 OrionLib:Init()
