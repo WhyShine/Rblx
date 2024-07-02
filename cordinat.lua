@@ -20,7 +20,6 @@ local LogsTab = Window:MakeTab({
 -- Variables to store data
 local lastLogTime = 0
 local logCooldown = 2 -- cooldown in seconds
-local interactionLogs = {}
 local errorLogs = {}
 
 -- Function to get player stats
@@ -70,15 +69,6 @@ local function getCurrentPosition()
     return string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z)
 end
 
--- Function to log interactions
-local function logInteraction(interaction)
-    local currentTime = tick()
-    if currentTime - lastLogTime >= logCooldown then
-        table.insert(interactionLogs, interaction)
-        lastLogTime = currentTime
-    end
-end
-
 -- Function to log errors
 local function logError(errorMessage)
     table.insert(errorLogs, errorMessage)
@@ -88,10 +78,6 @@ end
 -- Box to display coordinates
 LogsTab:AddLabel("Coordinates:")
 local coordinateLabel = LogsTab:AddLabel("")
-
--- Box to display interactions
-LogsTab:AddLabel("Interactions:")
-local interactionLabel = LogsTab:AddLabel("")
 
 -- Box to display errors
 LogsTab:AddLabel("Errors:")
@@ -105,51 +91,131 @@ spawn(function()
     end
 end)
 
--- Function to update interaction label
-local function updateInteractionLabel()
-    local logText = table.concat(interactionLogs, "\n")
-    interactionLabel:Set(logText)
-end
-
 -- Function to update error label
 local function updateErrorLabel()
     local logText = table.concat(errorLogs, "\n")
     errorLabel:Set(logText)
 end
 
--- Example interaction events
-game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    logInteraction("Character spawned: " .. tostring(character))
-    updateInteractionLabel()
-end)
-
-game.Players.LocalPlayer.Chatted:Connect(function(message)
-    logInteraction("User said: " .. message)
-    updateInteractionLabel()
-end)
-
--- You can add more events or interactions to log as needed
--- For example, interactions with objects, quests, etc.
--- Example: Logging quest interactions
-local function logQuestInteraction(questName, details)
-    logInteraction("Quest: " .. questName .. "\nDetails: " .. details)
-    updateInteractionLabel()
-end
-
--- Dummy function to simulate quest interaction
-local function onQuestInteraction()
-    logQuestInteraction("Quest Name", "Quest details and interactions")
-end
-
--- Call the dummy quest interaction function for demonstration
--- You can replace this with actual quest interaction logic
-onQuestInteraction()
-
 -- Error and warning capture
 game:GetService("LogService").MessageOut:Connect(function(message, messageType)
     if messageType == Enum.MessageType.MessageError or messageType == Enum.MessageType.MessageWarning then
         logError(message)
     end
+end)
+
+-- Create the Farm tab
+local FarmTab = Window:MakeTab({
+    Name = "Farm",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Add elements to Farm tab
+FarmTab:AddLabel("AutoFarm Settings")
+
+local tools = {}
+local function refreshTools()
+    tools = {}
+    for _, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if v:IsA("Tool") then
+            table.insert(tools, v.Name)
+        end
+    end
+end
+refreshTools()
+
+-- Check and set quest parameters
+local function CheckQuest()
+    local Lv = game.Players.LocalPlayer.Data.Level.Value
+    if Lv == 0 or Lv <= 10 then
+        Ms = "Bandit [Lv. 5]"
+        NM = "Bandit"
+        LQ = 1
+        NQ = "BanditQuest1"
+        CQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+    end
+end
+
+-- Teleport function
+local function TP(P)
+    local Distance = (P.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    local Speed = 300
+    if Distance < 10 then
+        Speed = 1000
+    elseif Distance < 170 then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = P
+        Speed = 350
+    elseif Distance < 1000 then
+        Speed = 350
+    end
+    game:GetService("TweenService"):Create(
+        game.Players.LocalPlayer.Character.HumanoidRootPart,
+        TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
+        {CFrame = P}
+    ):Play()
+end
+
+-- Autofarm function
+spawn(function()
+    while task.wait() do
+        if _G.AutoFarm then
+            CheckQuest()
+            if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
+                TP(CQ)
+                task.wait(0.9)
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NQ, LQ)
+            else
+                for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                    if v.Name == Ms then
+                        TP(v.HumanoidRootPart.CFrame * CFrame.new(0, 20, 0))
+                        v.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- Auto attack
+spawn(function()
+    game:GetService("RunService").RenderStepped:Connect(function()
+        if _G.AutoFarm then
+            pcall(function()
+                game:GetService('VirtualUser'):CaptureController()
+                game:GetService('VirtualUser'):Button1Down(Vector2.new(0, 1, 0, 1))
+            end)
+        end
+    end)
+end)
+
+local toolDropdown = FarmTab:AddDropdown("Weapon", tools, function(weapon)
+    -- Functionality for selecting weapon can be added here
+end)
+
+-- Refresh tools on addition/removal
+game.Players.LocalPlayer.Backpack.DescendantAdded:Connect(function(tool)
+    if tool:IsA("Tool") then
+        table.insert(tools, tool.Name)
+        toolDropdown:Refresh(tools)
+    end
+end)
+
+game.Players.LocalPlayer.Backpack.DescendantRemoving:Connect(function(tool)
+    if tool:IsA("Tool") then
+        for i, v in pairs(tools) do
+            if v == tool.Name then
+                table.remove(tools, i)
+                break
+            end
+        end
+        toolDropdown:Refresh(tools)
+    end
+end)
+
+-- Toggle for autofarm
+FarmTab:AddToggle("AutoFarm", false, function(state)
+    _G.AutoFarm = state
 end)
 
 -- Initiate Orion library
