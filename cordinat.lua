@@ -22,9 +22,8 @@ local Type = 1
 local Y = 20
 
 local function EquipWeapon(ToolSe)
-    if game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe) then
-        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe)
-        wait(0.4)
+    local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe)
+    if tool then
         game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
     end
 end
@@ -74,7 +73,7 @@ local function CheckLevel()
     return questInfo
 end
 
-function TP(P1)
+local function TP(P1)
     local Distance = (P1.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
     local Speed
     if Distance < 250 then
@@ -93,7 +92,7 @@ function TP(P1)
     ):Play()
 end
 
-function TP2(P1)
+local function TP2(P1)
     local Distance = (P1.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
     local Speed
     if Distance < 1000 then
@@ -187,6 +186,7 @@ spawn(function()
                                             game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
                                             MonsterPosition = enemy.HumanoidRootPart.CFrame
                                             MagnetActive = true
+                                            wait(0.2)  -- Add a small delay between attacks
                                         else
                                             MagnetActive = false    
                                             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
