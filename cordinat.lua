@@ -130,30 +130,49 @@ local function CheckQuest()
     local Lv = game.Players.LocalPlayer.Data.Level.Value
     if Lv == 0 or Lv <= 10 then
         Ms = "Bandit [Lv. 5]"
-        NM = "Bandit"
-        LQ = 1
-        NQ = "BanditQuest1"
-        CQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+        NameQuest = "BanditQuest1"
+        QuestLv = 1
+        NameMon = "Bandit"
+        CFrameQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+        CFrameMon = CFrame.new(0, 0, 0) -- Tentukan CFrame untuk musuh Bandit
+    elseif Lv == 10 or Lv <= 14 then
+        Ms = "Monkey [Lv. 14]"
+        NameQuest = "JungleQuest"
+        QuestLv = 1
+        NameMon = "Monkey"
+        CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
+        CFrameMon = CFrame.new(-1448.1446533203, 50.851993560791, 63.60718536377)
+    elseif Lv == 15 or Lv <= 29 then
+        Ms = "Gorilla [Lv. 20]"
+        NameQuest = "JungleQuest"
+        QuestLv = 2
+        NameMon = "Gorilla"
+        CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
+        CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
     end
 end
 
 -- Teleport function
 local function TP(P)
-    local Distance = (P.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-    local Speed = 300
-    if Distance < 10 then
-        Speed = 1000
-    elseif Distance < 170 then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = P
-        Speed = 350
-    elseif Distance < 1000 then
-        Speed = 350
+    local player = game.Players.LocalPlayer
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        local Distance = (P.Position - hrp.Position).Magnitude
+        local Speed = 300
+        if Distance < 10 then
+            Speed = 1000
+        elseif Distance < 170 then
+            hrp.CFrame = P
+            Speed = 350
+        elseif Distance < 1000 then
+            Speed = 350
+        end
+        game:GetService("TweenService"):Create(
+            hrp,
+            TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
+            {CFrame = P}
+        ):Play()
     end
-    game:GetService("TweenService"):Create(
-        game.Players.LocalPlayer.Character.HumanoidRootPart,
-        TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
-        {CFrame = P}
-    ):Play()
 end
 
 -- Autofarm function
@@ -162,9 +181,9 @@ spawn(function()
         if _G.AutoFarm then
             CheckQuest()
             if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-                TP(CQ)
+                TP(CFrameQ)
                 task.wait(0.9)
-                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NQ, LQ)
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
             else
                 for _, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
                     if v.Name == Ms then
