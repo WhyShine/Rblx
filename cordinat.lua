@@ -74,24 +74,53 @@ local function CheckLevel()
     return questInfo
 end
 
-local function Teleport(position)
-    local distance = (position.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-    local speed = 300
-
-    if distance < 10 then
-        speed = 1000
-    elseif distance < 170 then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = position
-        speed = 350
-    elseif distance < 1000 then
-        speed = 350
+function TP(P1)
+    local Distance = (P1.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    local Speed
+    if Distance < 250 then
+        Speed = 600
+    elseif Distance < 500 then
+        Speed = 400
+    elseif Distance < 1000 then
+        Speed = 350
+    else
+        Speed = 200
     end
-
     game:GetService("TweenService"):Create(
         game.Players.LocalPlayer.Character.HumanoidRootPart,
-        TweenInfo.new(distance / speed, Enum.EasingStyle.Linear),
-        {CFrame = position}
+        TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
+        {CFrame = P1}
     ):Play()
+end
+
+function TP2(P1)
+    local Distance = (P1.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    local Speed
+    if Distance < 1000 then
+        Speed = 400
+    else
+        Speed = 250
+    end
+    game:GetService("TweenService"):Create(
+        game.Players.LocalPlayer.Character.HumanoidRootPart,
+        TweenInfo.new(Distance/Speed, Enum.EasingStyle.Linear),
+        {CFrame = P1}
+    ):Play()
+    Clip = true
+    wait(Distance/Speed)
+    Clip = false
+end
+
+local Old_World = false
+local New_World = false
+local Three_World = false
+local placeId = game.PlaceId
+if placeId == 2753915549 then
+    Old_World = true
+elseif placeId == 4442272183 then
+    New_World = true
+elseif placeId == 7449423635 then
+    Three_World = true
 end
 
 local function Click()
@@ -132,14 +161,14 @@ spawn(function()
             local questInfo = CheckLevel()
             if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
                 MagnetActive = false
-                Teleport(questInfo.questCFrame)
+                TP(questInfo.questCFrame)
                 if (questInfo.questCFrame.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 4 then
                     wait(1.1)
                     if (questInfo.questCFrame.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 20 then
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", questInfo.questName, questInfo.questLevel)
                         game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetSpawnPoint")
                     else
-                        Teleport(questInfo.questCFrame)
+                        TP(questInfo.questCFrame)
                     end
                 end
             else
@@ -151,7 +180,7 @@ spawn(function()
                                     if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
                                         if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, questInfo.monsterName) then
                                             EquipWeapon(selectedWeapon)
-                                            Teleport(enemy.HumanoidRootPart.CFrame * FarmOffset)
+                                            TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
                                             enemy.HumanoidRootPart.CanCollide = false
                                             enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
                                             game:GetService("VirtualUser"):CaptureController()
@@ -164,14 +193,14 @@ spawn(function()
                                         end
                                     else
                                         MagnetActive = false
-                                        Teleport(questInfo.monsterCFrame)
+                                        TP(questInfo.monsterCFrame)
                                     end
                                 until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(enemy.Name)
                             end
                         end
                     else
                         MagnetActive = false
-                        Teleport(questInfo.monsterCFrame)
+                        TP(questInfo.monsterCFrame)
                     end
                 end)
             end
@@ -196,43 +225,16 @@ local toolDropdown = MainSection:AddDropdown({
     Name = "Weapon",
     Default = "",
     Options = tools,
-    Callback = function(weapon)
-        selectedWeapon = weapon
+    Callback = function(value)
+        selectedWeapon = value
     end
 })
-
-game.Players.LocalPlayer.Backpack.DescendantAdded:Connect(function(tool)
-    if tool:IsA("Tool") then
-        table.insert(tools, tool.Name)
-        toolDropdown:Refresh(tools)
-    end
-end)
-
-game.Players.LocalPlayer.Backpack.DescendantRemoving:Connect(function(tool)
-    if tool:IsA("Tool") then
-        for i, v in pairs(tools) do
-            if v == tool.Name then
-                table.remove(tools, i)
-            end
-        end    
-        toolDropdown:Refresh(tools)
-    end
-end)
 
 MainSection:AddToggle({
-    Name = "AutoFarm",
+    Name = "Auto Farm",
     Default = false,
-    Callback = function(state)
-        AutoFarm = state
-    end
-})
-
-MainSection:AddTextbox({
-    Name = "Fake Level",
-    Default = "",
-    TextDisappear = true,
-    Callback = function(fakeLevel)
-        game.Players.LocalPlayer.Data.Level.Value = tonumber(fakeLevel)
+    Callback = function(value)
+        AutoFarm = value
     end
 })
 
@@ -287,7 +289,7 @@ local function AddTeleportButton(name, position)
     TeleportSection:AddButton({
         Name = name,
         Callback = function()
-            Teleport(position)
+            TP(position)
         end
     })
 end
