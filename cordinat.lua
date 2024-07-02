@@ -14,6 +14,7 @@ local LogsTab = Window:MakeTab({
 -- Variables to store data
 local lastLogTime = 0
 local logCooldown = 2 -- cooldown in seconds
+local coordinateLogs = {}
 local interactionLogs = {}
 
 -- Function to get current position with 2 decimal precision
@@ -23,6 +24,15 @@ local function getCurrentPosition()
     local hrp = character:WaitForChild("HumanoidRootPart")
     local position = hrp.Position
     return string.format("X: %.2f, Y: %.2f, Z: %.2f", position.X, position.Y, position.Z)
+end
+
+-- Function to log coordinates
+local function logCoordinates()
+    local currentTime = tick()
+    if currentTime - lastLogTime >= logCooldown then
+        table.insert(coordinateLogs, getCurrentPosition())
+        lastLogTime = currentTime
+    end
 end
 
 -- Function to log interactions
@@ -50,7 +60,8 @@ local interactionBox = LogsTab:AddTextbox({
 -- Update the coordinate label continuously
 spawn(function()
     while true do
-        coordinateLabel:Set(getCurrentPosition())
+        logCoordinates()
+        coordinateLabel:Set(table.concat(coordinateLogs, "\n"))
         wait(0.1) -- update every 0.1 second
     end
 end)
@@ -72,22 +83,24 @@ game.Players.LocalPlayer.Chatted:Connect(function(message)
     updateInteractionBox()
 end)
 
--- You can add more events or interactions to log as needed
--- For example, interactions with objects, quests, etc.
--- Example: Logging quest interactions
-local function logQuestInteraction(questName, details)
-    logInteraction("Quest: " .. questName .. "\nDetails: " .. details)
-    updateInteractionBox()
+-- Log interactions with NPCs
+for _, npc in pairs(game.Workspace.NPCs:GetChildren()) do
+    npc.Touched:Connect(function(hit)
+        if hit.Parent == game.Players.LocalPlayer.Character then
+            logInteraction("Interacted with NPC: " .. npc.Name .. " - Action: Touch")
+            updateInteractionBox()
+        end
+    end)
+    
+    if npc:FindFirstChild("Attack") then
+        npc.Attack.OnServerEvent:Connect(function(player)
+            if player == game.Players.LocalPlayer then
+                logInteraction("Attacked by NPC: " .. npc.Name)
+                updateInteractionBox()
+            end
+        end)
+    end
 end
-
--- Dummy function to simulate quest interaction
-local function onQuestInteraction()
-    logQuestInteraction("Quest Name", "Quest details and interactions")
-end
-
--- Call the dummy quest interaction function for demonstration
--- You can replace this with actual quest interaction logic
-onQuestInteraction()
 
 -- Initiate Orion library
 OrionLib:Init()
