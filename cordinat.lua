@@ -4,7 +4,13 @@ local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shl
 -- Create a window
 local Window = OrionLib:MakeWindow({Name = "User Activity Logger", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
--- Create a tab for logs
+-- Create tabs
+local StatusTab = Window:MakeTab({
+    Name = "Status",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
 local LogsTab = Window:MakeTab({
     Name = "Logs",
     Icon = "rbxassetid://4483345998",
@@ -16,6 +22,44 @@ local lastLogTime = 0
 local logCooldown = 2 -- cooldown in seconds
 local interactionLogs = {}
 local errorLogs = {}
+
+-- Function to get player stats
+local function getPlayerStats()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local stats = {
+        Health = humanoid.Health,
+        MaxHealth = humanoid.MaxHealth,
+        Mana = character:FindFirstChild("Mana") and character.Mana.Value or "N/A",
+        Strength = player:FindFirstChild("Stats") and player.Stats.Strength.Value or "N/A",
+        Defense = player:FindFirstChild("Stats") and player.Stats.Defense.Value or "N/A",
+        Fruit = player:FindFirstChild("Stats") and player.Stats.Fruit.Value or "N/A",
+        Sword = player:FindFirstChild("Stats") and player.Stats.Sword.Value or "N/A",
+    }
+    return stats
+end
+
+-- Function to update player stats label
+local function updatePlayerStats()
+    local stats = getPlayerStats()
+    statusLabel:Set(string.format(
+        "Health: %.2f / %.2f\nMana: %s\nStrength: %s\nDefense: %s\nFruit: %s\nSword: %s",
+        stats.Health, stats.MaxHealth, stats.Mana, stats.Strength, stats.Defense, stats.Fruit, stats.Sword
+    ))
+end
+
+-- Create a label to display player stats
+StatusTab:AddLabel("Player Status:")
+local statusLabel = StatusTab:AddLabel("")
+
+-- Update the player stats label continuously
+spawn(function()
+    while true do
+        updatePlayerStats()
+        wait(1) -- update every 1 second
+    end
+end)
 
 -- Function to get current position with 2 decimal precision
 local function getCurrentPosition()
