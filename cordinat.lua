@@ -154,10 +154,10 @@ pcall(function()
     end
 end)
 
-local function MagnetMonsters(monsterName, position)
+local function MagnetMonsters(questInfo)
     for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-        if enemy.Name == monsterName and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-            enemy.HumanoidRootPart.CFrame = position
+        if enemy.Name == questInfo.monster and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+            enemy.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
             enemy.HumanoidRootPart.CanCollide = false
             enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
         end
@@ -189,17 +189,17 @@ spawn(function()
                                     if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
                                         if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, questInfo.monsterName) then
                                             EquipWeapon(selectedWeapon)
-                                            local magnetPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
-                                            if MagnetActive then
-                                                MagnetMonsters(questInfo.monster, magnetPosition)
-                                            end
                                             TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
                                             enemy.HumanoidRootPart.CanCollide = false
                                             enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
                                             game:GetService("VirtualUser"):CaptureController()
                                             game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
                                             MonsterPosition = enemy.HumanoidRootPart.CFrame
+                                            MagnetActive = true
                                             wait(0.2)  -- Add a small delay between attacks
+                                            if MagnetActive then
+                                                MagnetMonsters(questInfo)
+                                            end
                                         else
                                             MagnetActive = false    
                                             game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
@@ -220,8 +220,7 @@ spawn(function()
     end
 end)
 
--- UI Library Setup
-local Window = OrionLib:MakeWindow({Name = "Blox Fruits", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+local Window = OrionLib:MakeWindow({Name = "Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
 -- Main Tab
 local Main = Window:MakeTab({
