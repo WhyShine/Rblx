@@ -40,12 +40,7 @@ local coordinateLabel = LogsTab:AddLabel("")
 
 -- Box to display interactions
 LogsTab:AddLabel("Interactions:")
-local interactionBox = LogsTab:AddTextbox({
-    Name = "Interaction Log",
-    Default = "",
-    TextDisappear = false,
-    Callback = function() end
-})
+local interactionLabel = LogsTab:AddLabel("")
 
 -- Update the coordinate label continuously
 spawn(function()
@@ -55,23 +50,21 @@ spawn(function()
     end
 end)
 
--- Function to update interaction box
-local function updateInteractionBox()
-    if interactionBox and interactionBox.Set then
-        local logText = table.concat(interactionLogs, "\n")
-        interactionBox:Set(logText)
-    end
+-- Function to update interaction label
+local function updateInteractionLabel()
+    local logText = table.concat(interactionLogs, "\n")
+    interactionLabel:Set(logText)
 end
 
 -- Example interaction events
 game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
     logInteraction("Character spawned: " .. tostring(character))
-    updateInteractionBox()
+    updateInteractionLabel()
 end)
 
 game.Players.LocalPlayer.Chatted:Connect(function(message)
     logInteraction("User said: " .. message)
-    updateInteractionBox()
+    updateInteractionLabel()
 end)
 
 -- You can add more events or interactions to log as needed
@@ -79,7 +72,7 @@ end)
 -- Example: Logging quest interactions
 local function logQuestInteraction(questName, details)
     logInteraction("Quest: " .. questName .. "\nDetails: " .. details)
-    updateInteractionBox()
+    updateInteractionLabel()
 end
 
 -- Dummy function to simulate quest interaction
