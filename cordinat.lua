@@ -16,7 +16,7 @@ end
 local AutoFarm = false
 local selectedWeapon = ""
 local MagnetActive = false
-local FarmOffset = CFrame.new(0, 20, 0)
+local FarmOffset = CFrame.new(20, 20, 0)
 local MonsterPosition = nil
 local Type = 1
 local Y = 20
@@ -100,7 +100,7 @@ local function Click()
 end
 
 spawn(function()
-    while task.wait(0.1) do
+    while wait(0.1) do
         if Type == 1 then
             FarmOffset = CFrame.new(20, Y, 0)
         elseif Type == 2 then
@@ -110,7 +110,7 @@ spawn(function()
 end)
 
 spawn(function()
-    while task.wait(0.1) do
+    while wait(0.1) do
         Type = 1
         wait(5)
         Type = 2
@@ -228,11 +228,11 @@ MainSection:AddToggle({
 })
 
 MainSection:AddTextbox({
-    Name = "Fake Beli",
+    Name = "Fake Level",
     Default = "",
     TextDisappear = true,
     Callback = function(fakeLevel)
-        game.Players.LocalPlayer.Data.Level.Value = fakeLevel
+        game.Players.LocalPlayer.Data.Level.Value = tonumber(fakeLevel)
     end
 })
 
