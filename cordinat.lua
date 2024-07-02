@@ -154,6 +154,16 @@ pcall(function()
     end
 end)
 
+local function MagnetMonsters(monsterName, position)
+    for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+        if enemy.Name == monsterName and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+            enemy.HumanoidRootPart.CFrame = position
+            enemy.HumanoidRootPart.CanCollide = false
+            enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
+        end
+    end
+end
+
 spawn(function()
     while task.wait() do
         if AutoFarm then
@@ -179,13 +189,16 @@ spawn(function()
                                     if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
                                         if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, questInfo.monsterName) then
                                             EquipWeapon(selectedWeapon)
+                                            local magnetPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -5, 0)
+                                            if MagnetActive then
+                                                MagnetMonsters(questInfo.monster, magnetPosition)
+                                            end
                                             TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
                                             enemy.HumanoidRootPart.CanCollide = false
                                             enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
                                             game:GetService("VirtualUser"):CaptureController()
                                             game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
                                             MonsterPosition = enemy.HumanoidRootPart.CFrame
-                                            MagnetActive = true
                                             wait(0.2)  -- Add a small delay between attacks
                                         else
                                             MagnetActive = false    
@@ -195,11 +208,10 @@ spawn(function()
                                         MagnetActive = false
                                         TP(questInfo.monsterCFrame)
                                     end
-                                until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(enemy.Name)
+                                until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster)
                             end
                         end
                     else
-                        MagnetActive = false
                         TP(questInfo.monsterCFrame)
                     end
                 end)
@@ -208,7 +220,8 @@ spawn(function()
     end
 end)
 
-local Window = OrionLib:MakeWindow({Name = "BloxFruits Script Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+-- UI Library Setup
+local Window = OrionLib:MakeWindow({Name = "Blox Fruits", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
 -- Main Tab
 local Main = Window:MakeTab({
@@ -235,6 +248,14 @@ MainSection:AddToggle({
     Default = false,
     Callback = function(value)
         AutoFarm = value
+    end
+})
+
+MainSection:AddToggle({
+    Name = "Magnet",
+    Default = false,
+    Callback = function(value)
+        MagnetActive = value
     end
 })
 
