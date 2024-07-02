@@ -57,8 +57,10 @@ end)
 
 -- Function to update interaction box
 local function updateInteractionBox()
-    local logText = table.concat(interactionLogs, "\n")
-    interactionBox:Set(logText)
+    if interactionBox and interactionBox.Set then
+        local logText = table.concat(interactionLogs, "\n")
+        interactionBox:Set(logText)
+    end
 end
 
 -- Example interaction events
