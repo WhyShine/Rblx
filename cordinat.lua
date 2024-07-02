@@ -12,16 +12,36 @@ for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
 	end
 end
 
----autofarm Level
----lv 0-10
 function CheckQuest()
 	local Lv = game.Players.LocalPlayer.Data.Level.Value
 	if Lv == 0 or Lv <= 10 then
 		Ms = "Bandit [Lv. 5]"
-		NM = "Bandit"
-		LQ = 1
-		NQ = "BanditQuest1"
-		CQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+		NameQuest = "BanditQuest1"
+		QuestLv = 1
+		NameMon = "Bandit"
+		CFrameQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
+		CFrameMon = nil -- Tidak diperlukan untuk level ini
+	elseif Lv == 10 or Lv <= 14 or SelectMonster == "Monkey [Lv. 14]" then
+		Ms = "Monkey [Lv. 14]"
+		NameQuest = "JungleQuest"
+		QuestLv = 1
+		NameMon = "Monkey"
+		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
+		CFrameMon = CFrame.new(-1448.1446533203, 50.851993560791, 63.60718536377)
+	elseif Lv == 15 or Lv <= 29 or SelectMonster == "Gorilla [Lv. 20]" then
+		Ms = "Gorilla [Lv. 20]"
+		NameQuest = "JungleQuest"
+		QuestLv = 2
+		NameMon = "Gorilla"
+		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
+		CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
+	elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then
+		Ms = "Pirate [Lv. 35]"
+		NameQuest = "BuggyQuest1"
+		QuestLv = 1
+		NameMon = "Pirate"
+		CFrameQ = CFrame.new(-1140.1761474609, 4.752049446106, 3827.4057617188)
+		CFrameMon = CFrame.new(-1201.0881347656, 40.628940582275, 3857.5966796875)
 	end
 end
 
@@ -48,9 +68,9 @@ spawn(function()
 		if _G.AutoFarm then
 			CheckQuest()
 			if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-				TP(CQ)
+				TP(CFrameQ)
 				task.wait(0.9)
-				game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NQ, LQ)
+				game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
 			else
 				for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
 					if v.Name == Ms then
@@ -195,11 +215,10 @@ AddTeleportButton("Desert", CFrame.new(1094.3209228515625, 6.569626808166504, 42
 AddTeleportButton("Fountain City", CFrame.new(5529.7236328125, 429.35748291015625, 4245.5498046875))
 AddTeleportButton("Jungle", CFrame.new(-1615.1883544921875, 36.85209655761719, 150.80490112304688))
 AddTeleportButton("Marine Fort", CFrame.new(-4846.14990234375, 20.652048110961914, 4393.65087890625))
-AddTeleportButton("Middle Town", CFrame.new(-705.99755859375, 7.852255344390869, 1547.5216064453125))
-AddTeleportButton("Prison", CFrame.new(4841.84423828125, 5.651970863342285, 741.329833984375))
-AddTeleportButton("Pirate Village", CFrame.new(-1146.42919921875, 4.752060890197754, 3818.503173828125))
-AddTeleportButton("Sky 1", CFrame.new(-4967.8369140625, 717.6719970703125, -2623.84326171875))
-AddTeleportButton("Sky 2", CFrame.new(-7876.0771484375, 5545.58154296875, -381.19927978515625))
-AddTeleportButton("Snow", CFrame.new(1100.361328125, 5.290674209594727, -1151.5418701171875))
-AddTeleportButton("Under Water", CFrame.new(61135.29296875, 18.47164535522461, 1597.6827392578125))
-AddTeleportButton("Magma Village", CFrame.new(-5248.27197265625, 8.699088096618652, 8452.890625))
+AddTeleportButton("Middle Town", CFrame.new(-705.99755859375, 7.852255344390869, 1547.3697509765625))
+AddTeleportButton("Sky Island 1", CFrame.new(-4846.14990234375, 717.6875610351562, -2622.3544921875))
+AddTeleportButton("Sky Island 2", CFrame.new(-7891.73681640625, 5545.5283203125, -380.2913818359375))
+AddTeleportButton("Under Water City", CFrame.new(61163.8515625, 11.75231647491455, 1818.8211669921875))
+AddTeleportButton("Prison", CFrame.new(4851.97265625, 5.651928424835205, 734.74658203125))
+
+OrionLib:Init()
