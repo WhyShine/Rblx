@@ -15,6 +15,7 @@ local LogsTab = Window:MakeTab({
 local lastLogTime = 0
 local logCooldown = 2 -- cooldown in seconds
 local interactionLogs = {}
+local errorLogs = {}
 
 -- Function to get current position with 2 decimal precision
 local function getCurrentPosition()
@@ -34,6 +35,12 @@ local function logInteraction(interaction)
     end
 end
 
+-- Function to log errors
+local function logError(errorMessage)
+    table.insert(errorLogs, errorMessage)
+    updateErrorLabel()
+end
+
 -- Box to display coordinates
 LogsTab:AddLabel("Coordinates:")
 local coordinateLabel = LogsTab:AddLabel("")
@@ -41,6 +48,10 @@ local coordinateLabel = LogsTab:AddLabel("")
 -- Box to display interactions
 LogsTab:AddLabel("Interactions:")
 local interactionLabel = LogsTab:AddLabel("")
+
+-- Box to display errors
+LogsTab:AddLabel("Errors:")
+local errorLabel = LogsTab:AddLabel("")
 
 -- Update the coordinate label continuously
 spawn(function()
@@ -54,6 +65,12 @@ end)
 local function updateInteractionLabel()
     local logText = table.concat(interactionLogs, "\n")
     interactionLabel:Set(logText)
+end
+
+-- Function to update error label
+local function updateErrorLabel()
+    local logText = table.concat(errorLogs, "\n")
+    errorLabel:Set(logText)
 end
 
 -- Example interaction events
@@ -83,6 +100,13 @@ end
 -- Call the dummy quest interaction function for demonstration
 -- You can replace this with actual quest interaction logic
 onQuestInteraction()
+
+-- Error and warning capture
+game:GetService("LogService").MessageOut:Connect(function(message, messageType)
+    if messageType == Enum.MessageType.MessageError or messageType == Enum.MessageType.MessageWarning then
+        logError(message)
+    end
+end)
 
 -- Initiate Orion library
 OrionLib:Init()
