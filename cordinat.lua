@@ -1,224 +1,269 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
-for i, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
-	v:Disable()
+-- Disable Idle Connections
+for _, connection in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
+    connection:Disable()
 end
 
 local tools = {}
 
-for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-	if v:IsA("Tool") then
-		table.insert(tools, v.Name)
-	end
+for _, item in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+    if item:IsA("Tool") then
+        table.insert(tools, item.Name)
+    end
 end
 
-local Auto_Farm = false
-local SelectToolWeapon = ""
-local SelectWeaponBoss = ""
+local AutoFarm = false
+local selectedWeapon = ""
 local MagnetActive = false
-local Farm_Mode = CFrame.new(0, 20, 0)
-local PosMon = nil
+local FarmOffset = CFrame.new(0, 20, 0)
+local MonsterPosition = nil
+local Type = 1
+local Y = 20
 
-function CheckLevel()
-	local Lv = game.Players.LocalPlayer.Data.Level.Value
-	if Lv == 0 or Lv <= 10 then
-		Ms = "Bandit [Lv. 5]"
-		NameQuest = "BanditQuest1"
-		QuestLv = 1
-		NameMon = "Bandit"
-		CFrameQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
-		CFrameMon = nil
-	elseif Lv == 10 or Lv <= 14 or SelectMonster == "Monkey [Lv. 14]" then
-		Ms = "Monkey [Lv. 14]"
-		NameQuest = "JungleQuest"
-		QuestLv = 1
-		NameMon = "Monkey"
-		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-		CFrameMon = CFrame.new(-1448.1446533203, 50.851993560791, 63.60718536377)
-	elseif Lv == 15 or Lv <= 29 or SelectMonster == "Gorilla [Lv. 20]" then
-		Ms = "Gorilla [Lv. 20]"
-		NameQuest = "JungleQuest"
-		QuestLv = 2
-		NameMon = "Gorilla"
-		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-		CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
-	elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then
-		Ms = "Pirate [Lv. 35]"
-		NameQuest = "BuggyQuest1"
-		QuestLv = 1
-		NameMon = "Pirate"
-		CFrameQ = CFrame.new(-1140.1761474609, 4.752049446106, 3827.4057617188)
-		CFrameMon = CFrame.new(-1201.0881347656, 40.628940582275, 3857.5966796875)
-	end
+local function EquipWeapon(ToolSe)
+    if game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe) then
+        local tool = game.Players.LocalPlayer.Backpack:FindFirstChild(ToolSe)
+        wait(0.4)
+        game.Players.LocalPlayer.Character.Humanoid:EquipTool(tool)
+    end
 end
 
-function TP(P)
-	local Distance = (P.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-	local Speed = 300
-	if Distance < 10 then
-		Speed = 1000
-	elseif Distance < 170 then
-		game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = P
-		Speed = 350
-	elseif Distance < 1000 then
-		Speed = 350
-	end
-	game:GetService("TweenService"):Create(
-		game.Players.LocalPlayer.Character.HumanoidRootPart,
-		TweenInfo.new(Distance / Speed, Enum.EasingStyle.Linear),
-		{CFrame = P}
-	):Play()
+local function CheckLevel()
+    local level = game.Players.LocalPlayer.Data.Level.Value
+    local questInfo = {}
+
+    if level <= 10 then
+        questInfo = {
+            monster = "Bandit [Lv. 5]",
+            questName = "BanditQuest1",
+            questLevel = 1,
+            monsterName = "Bandit",
+            questCFrame = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375),
+            monsterCFrame = nil
+        }
+    elseif level <= 14 or SelectMonster == "Monkey [Lv. 14]" then
+        questInfo = {
+            monster = "Monkey [Lv. 14]",
+            questName = "JungleQuest",
+            questLevel = 1,
+            monsterName = "Monkey",
+            questCFrame = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102),
+            monsterCFrame = CFrame.new(-1448.1446533203, 50.851993560791, 63.60718536377)
+        }
+    elseif level <= 29 or SelectMonster == "Gorilla [Lv. 20]" then
+        questInfo = {
+            monster = "Gorilla [Lv. 20]",
+            questName = "JungleQuest",
+            questLevel = 2,
+            monsterName = "Gorilla",
+            questCFrame = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102),
+            monsterCFrame = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
+        }
+    elseif level <= 39 or SelectMonster == "Pirate [Lv. 35]" then
+        questInfo = {
+            monster = "Pirate [Lv. 35]",
+            questName = "BuggyQuest1",
+            questLevel = 1,
+            monsterName = "Pirate",
+            questCFrame = CFrame.new(-1140.1761474609, 4.752049446106, 3827.4057617188),
+            monsterCFrame = CFrame.new(-1201.0881347656, 40.628940582275, 3857.5966796875)
+        }
+    end
+
+    return questInfo
 end
 
-function Click()
-	game:GetService'VirtualUser':CaptureController()
-	game:GetService'VirtualUser':Button1Down(Vector2.new(1280, 672))
+local function Teleport(position)
+    local distance = (position.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+    local speed = 300
+
+    if distance < 10 then
+        speed = 1000
+    elseif distance < 170 then
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = position
+        speed = 350
+    elseif distance < 1000 then
+        speed = 350
+    end
+
+    game:GetService("TweenService"):Create(
+        game.Players.LocalPlayer.Character.HumanoidRootPart,
+        TweenInfo.new(distance / speed, Enum.EasingStyle.Linear),
+        {CFrame = position}
+    ):Play()
+end
+
+local function Click()
+    game:GetService('VirtualUser'):CaptureController()
+    game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
 end
 
 spawn(function()
-	while task.wait() do
-		if Auto_Farm then
-			if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-				MagnetActive = false
-				CheckLevel()
-				TP(CFrameQ)
-				if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 4 then
-					wait(1.1)
-					CheckLevel()
-					if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 20 then
-						game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
-						game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetSpawnPoint")
-					else
-						TP(CFrameQ)
-					end
-				end
-			elseif game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-				pcall(function()
-					CheckLevel()
-					if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
-						for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-							if v.Name == Ms and v:FindFirstChild("Humanoid") then
-								if v.Humanoid.Health > 0 then
-									repeat game:GetService("RunService").Heartbeat:wait()
-										if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
-											if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) then
-												EquipWeapon(SelectToolWeapon)
-												TP(v.HumanoidRootPart.CFrame * Farm_Mode)
-												v.HumanoidRootPart.CanCollide = false
-												v.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
-												game:GetService("VirtualUser"):CaptureController()
-												game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
-												PosMon = v.HumanoidRootPart.CFrame
-												MagnetActive = true
-											else
-												MagnetActive = false    
-												game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-											end
-										else
-											MagnetActive = false
-											CheckLevel()
-											TP(CFrameMon)
-										end
-									until not v.Parent or v.Humanoid.Health <= 0 or not Auto_Farm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(v.Name)
-								end
-							end
-						end
-					else
-						MagnetActive = false
-						CheckLevel()
-						TP(CFrameMon)
-					end
-				end)
-			end
-		end
-	end
+    while task.wait(0.1) do
+        if Type == 1 then
+            FarmOffset = CFrame.new(20, Y, 0)
+        elseif Type == 2 then
+            FarmOffset = CFrame.new(20, Y, 0)
+        end
+    end
+end)
+
+spawn(function()
+    while task.wait(0.1) do
+        Type = 1
+        wait(5)
+        Type = 2
+        wait(5)
+    end
+end)
+
+pcall(function()
+    for _, v in pairs(game:GetService("Workspace").Map.Dressrosa.Tavern:GetDescendants()) do
+        if v.ClassName == "Seat" then
+            v:Destroy()
+        end
+    end
+end)
+
+spawn(function()
+    while task.wait() do
+        if AutoFarm then
+            local questInfo = CheckLevel()
+            if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
+                MagnetActive = false
+                Teleport(questInfo.questCFrame)
+                if (questInfo.questCFrame.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 4 then
+                    wait(1.1)
+                    if (questInfo.questCFrame.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 20 then
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", questInfo.questName, questInfo.questLevel)
+                        game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetSpawnPoint")
+                    else
+                        Teleport(questInfo.questCFrame)
+                    end
+                end
+            else
+                pcall(function()
+                    if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
+                        for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                            if enemy.Name == questInfo.monster and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                                repeat game:GetService("RunService").Heartbeat:wait()
+                                    if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
+                                        if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, questInfo.monsterName) then
+                                            EquipWeapon(selectedWeapon)
+                                            Teleport(enemy.HumanoidRootPart.CFrame * FarmOffset)
+                                            enemy.HumanoidRootPart.CanCollide = false
+                                            enemy.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
+                                            game:GetService("VirtualUser"):CaptureController()
+                                            game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
+                                            MonsterPosition = enemy.HumanoidRootPart.CFrame
+                                            MagnetActive = true
+                                        else
+                                            MagnetActive = false    
+                                            game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
+                                        end
+                                    else
+                                        MagnetActive = false
+                                        Teleport(questInfo.monsterCFrame)
+                                    end
+                                until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(enemy.Name)
+                            end
+                        end
+                    else
+                        MagnetActive = false
+                        Teleport(questInfo.monsterCFrame)
+                    end
+                end)
+            end
+        end
+    end
 end)
 
 local Window = OrionLib:MakeWindow({Name = "BloxFruits Script Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
----Main
+-- Main Tab
 local Main = Window:MakeTab({
-	Name = "Main",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
+    Name = "Main",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
 })
 
 local MainSection = Main:AddSection({
-	Name = "Main"
+    Name = "Main"
 })
 
 local toolDropdown = MainSection:AddDropdown({
-	Name = "Weapon",
-	Default = "",
-	Options = tools,
-	Callback = function(weapon)
-		SelectToolWeapon = weapon
-	end
+    Name = "Weapon",
+    Default = "",
+    Options = tools,
+    Callback = function(weapon)
+        selectedWeapon = weapon
+    end
 })
 
 game.Players.LocalPlayer.Backpack.DescendantAdded:Connect(function(tool)
-	if tool:IsA("Tool") then
-		table.insert(tools, tool.Name)
-		toolDropdown:Refresh(tools)
-	end
+    if tool:IsA("Tool") then
+        table.insert(tools, tool.Name)
+        toolDropdown:Refresh(tools)
+    end
 end)
 
 game.Players.LocalPlayer.Backpack.DescendantRemoving:Connect(function(tool)
-	if tool:IsA("Tool") then
-		for i, v in pairs(tools) do
-			if v == tool.Name then
-				table.remove(tools, i)
-			end
-		end	
-		toolDropdown:Refresh(tools)
-	end
+    if tool:IsA("Tool") then
+        for i, v in pairs(tools) do
+            if v == tool.Name then
+                table.remove(tools, i)
+            end
+        end    
+        toolDropdown:Refresh(tools)
+    end
 end)
 
 MainSection:AddToggle({
-	Name = "AutoFarm",
-	Default = false,
-	Callback = function(state)
-		Auto_Farm = state
-	end
+    Name = "AutoFarm",
+    Default = false,
+    Callback = function(state)
+        AutoFarm = state
+    end
 })
 
 MainSection:AddTextbox({
-	Name = "Fake Beli",
-	Default = "",
-	TextDisappear = true,
-	Callback = function(fakebeli)
-		game.Players.LocalPlayer.Data.Level.Value = fakebeli
-	end
+    Name = "Fake Beli",
+    Default = "",
+    TextDisappear = true,
+    Callback = function(fakeLevel)
+        game.Players.LocalPlayer.Data.Level.Value = fakeLevel
+    end
 })
 
----Stats
+-- Stats Tab
 local Stats = Window:MakeTab({
-	Name = "Stats",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
+    Name = "Stats",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
 })
 
 local StatsSection = Stats:AddSection({
-	Name = "Stats"
+    Name = "Stats"
 })
 
 local function AddAutoStatToggle(name, stat)
-	StatsSection:AddToggle({
-		Name = name,
-		Default = false,
-		Callback = function(state)
-			_G["auto" .. stat .. "Stats"] = state
-			while _G["auto" .. stat .. "Stats"] do
-				local args = {
-					[1] = "AddPoint",
-					[2] = stat,
-					[3] = 1
-				}
-				game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
-				task.wait(30)
-			end
-		end
-	})
+    StatsSection:AddToggle({
+        Name = name,
+        Default = false,
+        Callback = function(state)
+            _G["auto" .. stat .. "Stats"] = state
+            while _G["auto" .. stat .. "Stats"] do
+                local args = {
+                    [1] = "AddPoint",
+                    [2] = stat,
+                    [3] = 1
+                }
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer(unpack(args))
+                task.wait(30)
+            end
+        end
+    })
 end
 
 AddAutoStatToggle("Meele", "Melee")
@@ -227,24 +272,24 @@ AddAutoStatToggle("Sword", "Sword")
 AddAutoStatToggle("Gun", "Gun")
 AddAutoStatToggle("Devil Fruit", "Demon Fruit")
 
----Teleport
+-- Teleport Tab
 local Teleport = Window:MakeTab({
-	Name = "Teleport",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
+    Name = "Teleport",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
 })
 
 local TeleportSection = Teleport:AddSection({
-	Name = "Teleport"
+    Name = "Teleport"
 })
 
 local function AddTeleportButton(name, position)
-	TeleportSection:AddButton({
-		Name = name,
-		Callback = function()
-			TP(position)
-		end
-	})
+    TeleportSection:AddButton({
+        Name = name,
+        Callback = function()
+            Teleport(position)
+        end
+    })
 end
 
 AddTeleportButton("Second Sea", CFrame.new(-41.248611450195, 20.44778251648, 2993.0021972656))
