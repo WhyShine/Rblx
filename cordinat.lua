@@ -204,18 +204,37 @@ spawn(function()
                                             end
                                         end
                                     end
-                                until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster)
+                                until not enemy.Parent or enemy.Humanoid.Health <= 0 or not AutoFarm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible
                             end
                         end
                     else
-                        if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
-                            TP(questInfo.monsterCFrame)
-                        end
+                        TP(questInfo.monsterCFrame)
                     end
                 end)
             end
         end
     end
+end)
+
+spawn(function()
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if AutoFarm or SafeMode or PlayerHunt or KillPlayer or AutoRainbow or AutoCitizen or AutoFarmBoss or FarmAllBoss or Elite or AutoThird or AutoBartilo or AutoRengoku or Auto_Bone or AutoEcto or AutoFarmObservation or Auto_Farm or FarmMasteryGun or FarmMasteryFruit or _G.Auto_indra_Hop or _G.Auto_Dark_Dagger_Hop or _G.AutoDonSwan_Hop or _G.Pole_Hop or Core or noclip or AutoEvoRace or TPChest or NextIsland or RaidSuperhuman or _G.AutoRaid or AutoFarmBoss or SelectFarm or Clip or HolyTorch or AutoFarmSelectMonster or AutoLowRaid then
+            if not game:GetService("Workspace"):FindFirstChild("LOL") then
+                local LOL = Instance.new("Part")
+                LOL.Name = "LOL"
+                LOL.Parent = game.Workspace
+                LOL.Anchored = true
+                LOL.Transparency = 1
+                LOL.Size = Vector3.new(30, -0.5, 30)
+            elseif game:GetService("Workspace"):FindFirstChild("LOL") then
+                game.Workspace["LOL"].CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(0, -3.6, 0)
+            end
+        else
+            if game:GetService("Workspace"):FindFirstChild("LOL") then
+                game:GetService("Workspace"):FindFirstChild("LOL"):Destroy()
+            end
+        end
+    end)
 end)
 
 local Window = OrionLib:MakeWindow({Name = "Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
