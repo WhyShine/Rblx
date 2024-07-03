@@ -4,7 +4,14 @@ for i, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
 	v:Disable()
 end
 
-local tools = {}
+local Auto_Farm = false
+local SelectToolWeapon = ""
+local SelectWeaponBoss = ""
+local MagnetActive = false
+local Farm_Mode = CFrame.new(0, 20, 0)
+local PosMon = nil
+local FastAttack = false
+
 local locations = {
 	{ name = "Second Sea", position = CFrame.new(-41.248611450195, 20.44778251648, 2993.0021972656) },
 	{ name = "Middle Town", position = CFrame.new(-690.34057617188, 15.094252586365, 1583.8342285156) },
@@ -14,53 +21,6 @@ local locations = {
 	{ name = "Under Water City", position = CFrame.new(61163.8515625, 11.75231647491455, 1818.8211669921875) },
 	{ name = "Prison", position = CFrame.new(4851.97265625, 5.651928424835205, 734.74658203125) }
 }
-
-for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-	if v:IsA("Tool") then
-		table.insert(tools, v.Name)
-	end
-end
-
-local Auto_Farm = false
-local SelectToolWeapon = ""
-local SelectWeaponBoss = ""
-local MagnetActive = false
-local Farm_Mode = CFrame.new(0, 20, 0)
-local PosMon = nil
-local FastAttack = false
-
-function CheckLevel()
-	local Lv = game.Players.LocalPlayer.Data.Level.Value
-	if Lv == 0 or Lv <= 10 then
-		Ms = "Bandit [Lv. 5]"
-		NameQuest = "BanditQuest1"
-		QuestLv = 1
-		NameMon = "Bandit"
-		CFrameQ = CFrame.new(1062.64697265625, 16.516624450683594, 1546.55224609375)
-		CFrameMon = nil
-	elseif Lv == 10 or Lv <= 14 or SelectMonster == "Monkey [Lv. 14]" then
-		Ms = "Monkey [Lv. 14]"
-		NameQuest = "JungleQuest"
-		QuestLv = 1
-		NameMon = "Monkey"
-		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-		CFrameMon = CFrame.new(-1448.1446533203, 50.851993560791, 63.60718536377)
-	elseif Lv == 15 or Lv <= 29 or SelectMonster == "Gorilla [Lv. 20]" then
-		Ms = "Gorilla [Lv. 20]"
-		NameQuest = "JungleQuest"
-		QuestLv = 2
-		NameMon = "Gorilla"
-		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-		CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
-	elseif Lv == 30 atau Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then
-		Ms = "Pirate [Lv. 35]"
-		NameQuest = "BuggyQuest1"
-		QuestLv = 1
-		NameMon = "Pirate"
-		CFrameQ = CFrame.new(-1140.1761474609, 4.752049446106, 3827.4057617188)
-		CFrameMon = CFrame.new(-1201.0881347656, 40.628940582275, 3857.5966796875)
-	end
-end
 
 function TP(P)
 	local Distance = (P.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
@@ -79,70 +39,6 @@ function TP(P)
 		{CFrame = P}
 	):Play()
 end
-
-function Click()
-	game:GetService'VirtualUser':CaptureController()
-	game:GetService'VirtualUser':Button1Down(Vector2.new(1280, 672))
-end
-
-spawn(function()
-	while task.wait() do
-		if Auto_Farm then
-			if not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-				MagnetActive = false
-				CheckLevel()
-				TP(CFrameQ)
-				if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 4 then
-					wait(1.1)
-					CheckLevel()
-					if (CFrameQ.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <= 20 then
-						game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
-						game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("SetSpawnPoint")
-					else
-						TP(CFrameQ)
-					end
-				end
-			elseif game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible then
-				pcall(function()
-					CheckLevel()
-					if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
-						for i, v in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-							if v.Name == Ms and v:FindFirstChild("Humanoid") then
-								if v.Humanoid.Health > 0 then
-									repeat game:GetService("RunService").Heartbeat:wait()
-										if game:GetService("Workspace").Enemies:FindFirstChild(Ms) then
-											if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, NameMon) then
-												EquipWeapon(SelectToolWeapon)
-												TP(v.HumanoidRootPart.CFrame * Farm_Mode)
-												v.HumanoidRootPart.CanCollide = false
-												v.HumanoidRootPart.Size = Vector3.new(60, 60, 60)
-												game:GetService("VirtualUser"):CaptureController()
-												game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
-												PosMon = v.HumanoidRootPart.CFrame
-												MagnetActive = true
-											else
-												MagnetActive = false    
-												game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("AbandonQuest")
-											end
-										else
-											MagnetActive = false
-											CheckLevel()
-											TP(CFrameMon)
-										end
-									until not v.Parent or v.Humanoid.Health <= 0 or not Auto_Farm or not game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Visible or not game:GetService("Workspace").Enemies:FindFirstChild(v.Name)
-								end
-							end
-						end
-					else
-						MagnetActive = false
-						CheckLevel()
-						TP(CFrameMon)
-					end
-				end)
-			end
-		end
-	end
-end)
 
 local RigC = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework) 
 local VirtualUser = game:GetService('VirtualUser')
@@ -181,69 +77,6 @@ spawn(function()
 end)
 
 local Window = OrionLib:MakeWindow({Name = "Blox Fruits", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
-
-local Main = Window:MakeTab({
-	Name = "AutoFarm",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-
-local MainSection = Main:AddSection({
-	Name = "Main"
-})
-
-MainSection:AddDropdown({
-	Name = "Select Weapon",
-	Default = "",
-	Options = tools,
-	Callback = function(Value)
-		SelectToolWeapon = Value
-	end    
-})
-
-MainSection:AddToggle({
-	Name = "AutoFarm Level",
-	Default = false,
-	Callback = function(vu)
-		_G.AutoFarm = vu
-		Magnet = vu
-		if _G.AutoFarm and SelectToolWeapon == "" then
-			ui:Notification("AutoFarm", "SelectWeapon First", 2)
-		else
-			Auto_Farm = vu
-			SelectMonster = ""
-			if not vu then
-				wait(1)
-				TP(game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame)
-			end
-		end
-		function UseCode(Text)
-			game:GetService("ReplicatedStorage").Remotes.Redeem:InvokeServer(Text)
-		end
-		UseCode("UPD16")
-		UseCode("2BILLION")
-		UseCode("UPD15")
-		UseCode("FUDD10")
-		UseCode("BIGNEWS")
-		UseCode("THEGREATACE")
-		UseCode("SUB2GAMERROBOT_EXP1")
-		UseCode("StrawHatMaine")
-		UseCode("Sub2OfficialNoobie")
-		UseCode("SUB2NOOBMASTER123")
-		UseCode("Sub2Daigrock")
-		UseCode("Axiore")
-		UseCode("TantaiGaming")
-		UseCode("STRAWHATMAINE")
-	end
-})
-
-MainSection:AddToggle({
-	Name = "Fast Attack",
-	Default = false,
-	Callback = function(Value)
-		FastAttack = Value
-	end
-})
 
 local Teleport = Window:MakeTab({
 	Name = "Teleport",
