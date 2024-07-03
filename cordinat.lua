@@ -216,7 +216,7 @@ function CheckLevel()
             QuestLv = 2
             NameMon = "Gorilla"
             CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-            CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
+            CFrameMon = CFrame.new(-1142.6488037109, 40.407936096191, -518.04833984375)
         elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then -- Pirate
             Ms = "Pirate [Lv. 35]"
             NameQuest = "BuggyQuest1"
@@ -349,6 +349,19 @@ Main:AddToggle({
     Default = false,
     Callback = function(vu)
         FastAttack = vu
+    end
+})
+
+Main:AddButton({
+    Name = "Log Current Coordinates",
+    Callback = function()
+        local playerPosition = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+        print("Current Coordinates: X: " .. playerPosition.X .. " Y: " .. playerPosition.Y .. " Z: " .. playerPosition.Z)
+        OrionLib:MakeNotification({
+            Name = "Coordinates Logged",
+            Content = "X: " .. playerPosition.X .. " Y: " .. playerPosition.Y .. " Z: " .. playerPosition.Z,
+            Time = 5
+        })
     end
 })
 
