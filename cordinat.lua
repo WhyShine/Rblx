@@ -250,7 +250,8 @@ end)
 
 local Main = OrionLib:MakeWindow({Name = "Auto Farm GUI", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
-Main:AddToggle({
+-- Jika `AddToggle` tidak ada, kita gunakan cara alternatif untuk membuat toggle
+local autoFarmToggle = Main:AddToggle({
     Name = "Auto Farm Level",
     Default = AutoFarm,
     Callback = function(value)
