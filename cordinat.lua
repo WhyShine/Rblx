@@ -223,37 +223,35 @@ spawn(function()
                 end
             else
                 pcall(function()
-                    if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
-                        for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
-                            if enemy.Name == questInfo.monster and enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
-                                repeat game:GetService("RunService").Heartbeat:wait()
-                                    if game:GetService("Workspace").Enemies:FindFirstChild(questInfo.monster) then
-                                        if string.find(game:GetService("Players").LocalPlayer.PlayerGui.Main.Quest.Container.QuestTitle.Title.Text, questInfo.monsterName) then
-                                            if enemy.Humanoid.Health > 0 then
-                                                if UseMagnet then
-                                                    MagnetActive = true
-                                                    enemy.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * FarmOffset
-                                                else
-                                                    TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
-                                                end
-                                            elseif enemy.Humanoid.Health <= 0 or not enemy.Parent or not AutoFarm then
-                                                break
-                                            end
-                                            EquipWeapon(selectedWeapon)
-                                            Click()
-                                        else
-                                            MagnetActive = false
-                                            TP(questInfo.questCFrame)
-                                        end
+                    for _, enemy in pairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                        if enemy.Name == questInfo.monster then
+                            repeat
+                                task.wait()
+                                if enemy.Humanoid.Health > 0 then
+                                    if UseMagnet then
+                                        MagnetActive = true
+                                        enemy.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * FarmOffset
+                                    else
+                                        TP(enemy.HumanoidRootPart.CFrame * FarmOffset)
                                     end
-                                until enemy.Humanoid.Health <= 0 or not enemy.Parent or not AutoFarm
-                            end
+                                elseif enemy.Humanoid.Health <= 0 or not enemy.Parent or not AutoFarm then
+                                    break
+                                end
+                                EquipWeapon(selectedWeapon)
+                                Click()
+                            until enemy.Humanoid.Health <= 0 or not enemy.Parent or not AutoFarm
                         end
                     end
                 end)
             end
         end
     end
+end)
+
+local Main = OrionLib:MakeWindow({Name = "Auto Farm GUI", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+
+Main:AddToggle("Auto Farm Level", AutoFarm, function(value)
+    AutoFarm = value
 end)
 
 OrionLib:Init()
