@@ -1,4 +1,31 @@
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Auto Farm GUI",
+    LoadingTitle = "Loading Auto Farm GUI",
+    LoadingSubtitle = "by YourName",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "RayfieldTest", -- Folder to save configuration
+        FileName = "Config"
+    }
+})
+
+local Tab = Window:CreateTab("Main", 4483362458) -- Tab name and icon
+local Section = Tab:CreateSection("Auto Farm")
+
+local AutoFarm = false
+
+Section:CreateToggle({
+    Name = "Auto Farm Level",
+    CurrentValue = AutoFarm,
+    Flag = "AutoFarm", -- A flag to store the toggle state
+    Callback = function(value)
+        AutoFarm = value
+    end
+})
+
+Rayfield:LoadConfiguration()
 
 -- Disable Idle Connections
 for _, connection in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
@@ -13,7 +40,6 @@ for _, item in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
     end
 end
 
-local AutoFarm = false
 local selectedWeapon = ""
 local MagnetActive = false
 local FarmOffset = CFrame.new(20, 20, 0)
@@ -247,16 +273,3 @@ spawn(function()
         end
     end
 end)
-
-local Main = OrionLib:MakeWindow({Name = "Auto Farm GUI", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
-
--- Jika `AddToggle` tidak ada, kita gunakan cara alternatif untuk membuat toggle
-local autoFarmToggle = Main:AddToggle({
-    Name = "Auto Farm Level",
-    Default = AutoFarm,
-    Callback = function(value)
-        AutoFarm = value
-    end
-})
-
-OrionLib:Init()
