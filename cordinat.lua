@@ -216,7 +216,7 @@ function CheckLevel()
             QuestLv = 2
             NameMon = "Gorilla"
             CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-            CFrameMon = CFrame.new(-1142.6488037109, 40.407936096191, -518.04833984375)
+            CFrameMon = CFrame.new(-1282.8292236326125, 6.221, -508.2661437988281)
         elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then -- Pirate
             Ms = "Pirate [Lv. 35]"
             NameQuest = "BuggyQuest1"
