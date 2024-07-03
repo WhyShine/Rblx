@@ -216,7 +216,7 @@ function CheckLevel()
             QuestLv = 2
             NameMon = "Gorilla"
             CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
-            CFrameMon = CFrame.new(-1282.8292236326125, 6.221, -508.2661437988281)
+            CFrameMon = CFrame.new(-1142.6488037109, 51.052509307861, -518.04833984375)
         elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then -- Pirate
             Ms = "Pirate [Lv. 35]"
             NameQuest = "BuggyQuest1"
@@ -362,6 +362,26 @@ Main:AddButton({
             Content = "X: " .. playerPosition.X .. " Y: " .. playerPosition.Y .. " Z: " .. playerPosition.Z,
             Time = 5
         })
+    end
+})
+
+Main:AddToggle({
+    Name = "Auto Attack Nearby Monsters",
+    Default = false,
+    Callback = function(Value)
+        AutoAttack = Value
+        while AutoAttack do
+            wait(0.1)
+            for _, enemy in ipairs(game:GetService("Workspace").Enemies:GetChildren()) do
+                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                    if (enemy.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 20 then
+                        EquipWeapon(SelectToolWeapon)
+                        game:GetService("VirtualUser"):CaptureController()
+                        game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670), workspace.CurrentCamera.CFrame)
+                    end
+                end
+            end
+        end
     end
 })
 
