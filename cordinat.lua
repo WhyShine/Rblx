@@ -335,10 +335,14 @@ function Click()
     game:GetService('VirtualUser'):Button1Down(Vector2.new(1280, 672))
 end
 
-if SelectToolWeapon then
-else
-    SelectToolWeapon = "Combat"
-end
+Main:AddDropdown({
+    Name = "Select Weapon",
+    Default = "",
+    Options = {"Combat", "Sword", "Gun"},
+    Callback = function(Value)
+        SelectToolWeapon = Value
+    end
+})
 
 Main:AddToggle({
     Name = "Fast Attack",
@@ -347,3 +351,7 @@ Main:AddToggle({
         FastAttack = vu
     end
 })
+
+if SelectToolWeapon == "" then
+    SelectToolWeapon = "Combat"
+end
