@@ -18,6 +18,7 @@ local SelectWeaponBoss = ""
 local MagnetActive = false
 local Farm_Mode = CFrame.new(0, 20, 0)
 local PosMon = nil
+local FastAttack = false
 
 function CheckLevel()
 	local Lv = game.Players.LocalPlayer.Data.Level.Value
@@ -42,7 +43,7 @@ function CheckLevel()
 		NameMon = "Gorilla"
 		CFrameQ = CFrame.new(-1601.6553955078, 36.85213470459, 153.38809204102)
 		CFrameMon = CFrame.new(-1142.6488037109, 40.462348937988, -515.39227294922)
-	elseif Lv == 30 or Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then
+	elseif Lv == 30 atau Lv <= 39 or SelectMonster == "Pirate [Lv. 35]" then
 		Ms = "Pirate [Lv. 35]"
 		NameQuest = "BuggyQuest1"
 		QuestLv = 1
@@ -134,6 +135,42 @@ spawn(function()
 	end
 end)
 
+local RigC = require(game:GetService("Players").LocalPlayer.PlayerScripts.CombatFramework) 
+local VirtualUser = game:GetService('VirtualUser')
+local kkii = require(game.ReplicatedStorage.Util.CameraShaker)
+
+spawn(function()
+	game:GetService('RunService').Heartbeat:connect(function()
+		if FastAttack then
+			pcall(function()
+				RigC.activeController.timeToNextAttack = 0
+				RigC.activeController.attacking = false
+				RigC.activeController.blocking = false
+				RigC.activeController.timeToNextAttack = 0
+				RigC.activeController.timeToNextBlock = 0
+				RigC.activeController.increment = 3
+				RigC.activeController.hitboxMagnitude = 100
+				game.Players.LocalPlayer.Character.Stun.Value = 0
+				game.Players.LocalPlayer.Character.Humanoid.Sit = false
+
+				VirtualUser:CaptureController()
+				VirtualUser:Button1Down(Vector2.new(1280, 672))
+				kkii:Stop()
+			end)
+		end
+	end)
+end)
+
+spawn(function()
+	while true do
+		game:GetService('RunService').Heartbeat:wait()
+		if FastAttack then
+			VirtualUser:CaptureController()
+			VirtualUser:Button1Down(Vector2.new(1280, 672))
+		end
+	end
+end)
+
 local Window = OrionLib:MakeWindow({Name = "BloxFruits Script Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
 ---Main
@@ -190,7 +227,7 @@ MainSection:AddToggle({
 				TP(game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame)
 			end
 		end
-		local function UseCode(Text)
+		function UseCode(Text)
 			game:GetService("ReplicatedStorage").Remotes.Redeem:InvokeServer(Text)
 		end
 		UseCode("UPD16")
@@ -210,12 +247,11 @@ MainSection:AddToggle({
 	end
 })
 
-MainSection:AddTextbox({
-	Name = "Fake Beli",
-	Default = "",
-	TextDisappear = true,
+MainSection:AddToggle({
+	Name = "Fast Attack",
+	Default = false,
 	Callback = function(Value)
-		game.Players.LocalPlayer.PlayerGui.Main.Beli.Text = Value
+		FastAttack = Value
 	end
 })
 
