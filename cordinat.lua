@@ -5,6 +5,15 @@ for i, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
 end
 
 local tools = {}
+local locations = {
+	{ name = "Second Sea", position = CFrame.new(-41.248611450195, 20.44778251648, 2993.0021972656) },
+	{ name = "Middle Town", position = CFrame.new(-690.34057617188, 15.094252586365, 1583.8342285156) },
+	{ name = "Colosseum", position = CFrame.new(-1836.5816650391, 7.2894344329834, 1350.6179199219) },
+	{ name = "Sky Island 1", position = CFrame.new(-4846.14990234375, 717.6875610351562, -2622.3544921875) },
+	{ name = "Sky Island 2", position = CFrame.new(-7891.73681640625, 5545.5283203125, -380.2913818359375) },
+	{ name = "Under Water City", position = CFrame.new(61163.8515625, 11.75231647491455, 1818.8211669921875) },
+	{ name = "Prison", position = CFrame.new(4851.97265625, 5.651928424835205, 734.74658203125) }
+}
 
 for i, v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
 	if v:IsA("Tool") then
@@ -171,11 +180,10 @@ spawn(function()
 	end
 end)
 
-local Window = OrionLib:MakeWindow({Name = "BloxFruits Script Test", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
+local Window = OrionLib:MakeWindow({Name = "Blox Fruits", HidePremium = false, SaveConfig = true, ConfigFolder = "OrionTest"})
 
----Main
 local Main = Window:MakeTab({
-	Name = "Main",
+	Name = "AutoFarm",
 	Icon = "rbxassetid://4483345998",
 	PremiumOnly = false
 })
@@ -184,32 +192,14 @@ local MainSection = Main:AddSection({
 	Name = "Main"
 })
 
-local toolDropdown = MainSection:AddDropdown({
-	Name = "Weapon",
+MainSection:AddDropdown({
+	Name = "Select Weapon",
 	Default = "",
 	Options = tools,
-	Callback = function(weapon)
-		SelectToolWeapon = weapon
-	end
+	Callback = function(Value)
+		SelectToolWeapon = Value
+	end    
 })
-
-game.Players.LocalPlayer.Backpack.DescendantAdded:Connect(function(tool)
-	if tool:IsA("Tool") then
-		table.insert(tools, tool.Name)
-		toolDropdown:Refresh(tools)
-	end
-end)
-
-game.Players.LocalPlayer.Backpack.DescendantRemoving:Connect(function(tool)
-	if tool:IsA("Tool") then
-		for i, v in pairs(tools) do
-			if v == tool.Name then
-				table.remove(tools, i)
-			end
-		end	
-		toolDropdown:Refresh(tools)
-	end
-end)
 
 MainSection:AddToggle({
 	Name = "AutoFarm Level",
@@ -265,21 +255,36 @@ local TeleportSection = Teleport:AddSection({
 	Name = "Teleport"
 })
 
-local function AddTeleportButton(name, position)
-	TeleportSection:AddButton({
-		Name = name,
-		Callback = function()
-			TP(position)
-		end
-	})
+local locationNames = {}
+for _, location in ipairs(locations) do
+	table.insert(locationNames, location.name)
 end
 
-AddTeleportButton("Second Sea", CFrame.new(-41.248611450195, 20.44778251648, 2993.0021972656))
-AddTeleportButton("Middle Town", CFrame.new(-690.34057617188, 15.094252586365, 1583.8342285156))
-AddTeleportButton("Colosseum", CFrame.new(-1836.5816650391, 7.2894344329834, 1350.6179199219))
-AddTeleportButton("Sky Island 1", CFrame.new(-4846.14990234375, 717.6875610351562, -2622.3544921875))
-AddTeleportButton("Sky Island 2", CFrame.new(-7891.73681640625, 5545.5283203125, -380.2913818359375))
-AddTeleportButton("Under Water City", CFrame.new(61163.8515625, 11.75231647491455, 1818.8211669921875))
-AddTeleportButton("Prison", CFrame.new(4851.97265625, 5.651928424835205, 734.74658203125))
+local selectedLocation = nil
+
+TeleportSection:AddDropdown({
+	Name = "Select Location",
+	Default = "",
+	Options = locationNames,
+	Callback = function(Value)
+		for _, location in ipairs(locations) do
+			if location.name == Value then
+				selectedLocation = location.position
+				break
+			end
+		end
+	end
+})
+
+TeleportSection:AddButton({
+	Name = "Teleport",
+	Callback = function()
+		if selectedLocation then
+			TP(selectedLocation)
+		else
+			print("No location selected")
+		end
+	end
+})
 
 OrionLib:Init()
