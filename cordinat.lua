@@ -6,12 +6,12 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle = "by YourName",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "RayfieldTest", -- Folder to save configuration
+        FolderName = "RayfieldTest", -- Folder untuk menyimpan konfigurasi
         FileName = "Config"
     }
 })
 
-local Tab = Window:CreateTab("Main", 4483362458) -- Tab name and icon
+local Tab = Window:CreateTab("Main", 4483362458) -- Nama tab dan ikon
 local Section = Tab:CreateSection("Auto Farm")
 
 local AutoFarm = false
@@ -19,7 +19,7 @@ local AutoFarm = false
 Section:CreateToggle({
     Name = "Auto Farm Level",
     CurrentValue = AutoFarm,
-    Flag = "AutoFarm", -- A flag to store the toggle state
+    Flag = "AutoFarm", -- Flag untuk menyimpan status toggle
     Callback = function(value)
         AutoFarm = value
     end
