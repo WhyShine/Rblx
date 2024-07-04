@@ -40,11 +40,18 @@ function TP(P1)
 end
 
 local function TP(CFrameTarget)
-    local tweenService = game:GetService("TweenService")
-    local tweenInfo = TweenInfo.new((CFrameTarget.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude / 300, Enum.EasingStyle.Linear)
-    local tween = tweenService:Create(game.Players.LocalPlayer.Character.HumanoidRootPart, tweenInfo, {CFrame = CFrameTarget})
-    tween:Play()
-    tween.Completed:Wait()
+    local player = game:GetService("Players").LocalPlayer
+    local humanoidRootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart then
+        local distance = (CFrameTarget.Position - humanoidRootPart.Position).Magnitude
+        if distance > 5 then -- Adjust the distance threshold as needed
+            local tweenService = game:GetService("TweenService")
+            local tweenInfo = TweenInfo.new(distance / 300, Enum.EasingStyle.Linear)
+            local tween = tweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrameTarget})
+            tween:Play()
+            tween.Completed:Wait()
+        end
+    end
 end
 
 function TP2(P1)
@@ -789,6 +796,110 @@ pcall(function()
         end
     end
 end)
+spawn(function()
+    while wait() do
+        if Auto_Farm then
+            local player = game:GetService("Players").LocalPlayer
+            local playerGui = player.PlayerGui
+            local replicatedStorage = game:GetService("ReplicatedStorage")
+            local workspace = game:GetService("Workspace")
+
+            if playerGui.Main.Quest.Visible == false then
+                MagnetActive = false
+                CheckLevel()
+                TP(CFrameQ)
+                if (CFrameQ.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 4 then
+                    wait(1.1)
+                    CheckLevel()
+                    if (CFrameQ.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
+                        replicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
+                        replicatedStorage.Remotes.CommF_:InvokeServer("SetSpawnPoint")
+                    else
+                        TP(CFrameQ)
+                    end
+                end
+            elseif playerGui.Main.Quest.Visible == true then
+                pcall(function()
+                    CheckLevel()
+                    local enemies = workspace.Enemies
+                    if enemies:FindFirstChild(Ms) then
+                        for _, v in pairs(enemies:GetChildren()) do
+                            if v.Name == Ms and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                                repeat
+                                    game:GetService("RunService").Heartbeat:wait()
+                                    pcall(function()
+                                        EquipWeapon(SelectToolWeapon)
+                                        TP(v.HumanoidRootPart.CFrame * CFrame.new(0, 25, 25))
+                                        require(player.PlayerScripts.CombatFramework).activeController.hitboxMagnitude = 1000
+                                        game:GetService("VirtualUser"):CaptureController()
+                                        game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670))
+                                        sethiddenproperty(player, "SimulationRadius", math.huge)
+                                    end)
+                                until not v.Parent or v.Humanoid.Health <= 0 or not Auto_Farm or playerGui.Main.Quest.Visible == false or not enemies:FindFirstChild(v.Name)
+                            end
+                        end
+                    else
+                        MagnetActive = false
+                        CheckLevel()
+                        TP(CFrameMon)
+                    end
+                end)
+            end
+        end
+    end
+end)
+spawn(function()
+    while wait() do
+        if Auto_Farm then
+            local player = game:GetService("Players").LocalPlayer
+            local playerGui = player.PlayerGui
+            local replicatedStorage = game:GetService("ReplicatedStorage")
+            local workspace = game:GetService("Workspace")
+
+            if playerGui.Main.Quest.Visible == false then
+                MagnetActive = false
+                CheckLevel()
+                TP(CFrameQ)
+                if (CFrameQ.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 4 then
+                    wait(1.1)
+                    CheckLevel()
+                    if (CFrameQ.Position - player.Character.HumanoidRootPart.Position).Magnitude <= 20 then
+                        replicatedStorage.Remotes.CommF_:InvokeServer("StartQuest", NameQuest, QuestLv)
+                        replicatedStorage.Remotes.CommF_:InvokeServer("SetSpawnPoint")
+                    else
+                        TP(CFrameQ)
+                    end
+                end
+            elseif playerGui.Main.Quest.Visible == true then
+                pcall(function()
+                    CheckLevel()
+                    local enemies = workspace.Enemies
+                    if enemies:FindFirstChild(Ms) then
+                        for _, v in pairs(enemies:GetChildren()) do
+                            if v.Name == Ms and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+                                repeat
+                                    game:GetService("RunService").Heartbeat:wait()
+                                    pcall(function()
+                                        EquipWeapon(SelectToolWeapon)
+                                        TP(v.HumanoidRootPart.CFrame * CFrame.new(0, 25, 25))
+                                        require(player.PlayerScripts.CombatFramework).activeController.hitboxMagnitude = 1000
+                                        game:GetService("VirtualUser"):CaptureController()
+                                        game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670))
+                                        sethiddenproperty(player, "SimulationRadius", math.huge)
+                                    end)
+                                until not v.Parent or v.Humanoid.Health <= 0 or not Auto_Farm or playerGui.Main.Quest.Visible == false or not enemies:FindFirstChild(v.Name)
+                            end
+                        end
+                    else
+                        MagnetActive = false
+                        CheckLevel()
+                        TP(CFrameMon)
+                    end
+                end)
+            end
+        end
+    end
+end)
 
 spawn(function()
     while wait() do
@@ -827,8 +938,6 @@ spawn(function()
                                         require(player.PlayerScripts.CombatFramework).activeController.hitboxMagnitude = 1000
                                         game:GetService("VirtualUser"):CaptureController()
                                         game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 670))
-                                        FoundIndra = true
-                                        replicatedStorage.Remotes.CommF_:InvokeServer("TravelZou")
                                         sethiddenproperty(player, "SimulationRadius", math.huge)
                                     end)
                                 until not v.Parent or v.Humanoid.Health <= 0 or not Auto_Farm or playerGui.Main.Quest.Visible == false or not enemies:FindFirstChild(v.Name)
