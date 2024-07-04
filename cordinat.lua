@@ -901,6 +901,15 @@ spawn(function()
     end
 end)
 
+local function MagnetNPCs()
+    local workspace = game:GetService("Workspace")
+    for _, v in pairs(workspace.Enemies:GetChildren()) do
+        if v.Name == Ms and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
+            v.HumanoidRootPart.CFrame = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame * CFrame.new(math.random(-10, 10), 0, math.random(-10, 10))
+        end
+    end
+end
+
 spawn(function()
     while wait() do
         if Auto_Farm then
@@ -928,6 +937,7 @@ spawn(function()
                     CheckLevel()
                     local enemies = workspace.Enemies
                     if enemies:FindFirstChild(Ms) then
+                        MagnetNPCs()
                         for _, v in pairs(enemies:GetChildren()) do
                             if v.Name == Ms and v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 then
                                 repeat
