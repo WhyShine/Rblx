@@ -188,6 +188,8 @@ Main:AddToggle({
                 TP(game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame)
             end
         end
+    end
+})
         function UseCode(Text)
             game:GetService("ReplicatedStorage").Remotes.Redeem:InvokeServer(Text)
         end
@@ -242,6 +244,14 @@ spawn(function()
         end
     end
 end)
+
+function TP(targetCFrame)
+    local player = game:GetService("Players").LocalPlayer
+    local distance = (targetCFrame.Position - player.Character.HumanoidRootPart.Position).Magnitude
+    if distance > 500 then
+        player.Character.HumanoidRootPart.CFrame = targetCFrame
+    end
+end
 
 
 function CheckLevel()
@@ -852,7 +862,10 @@ spawn(function()
                     else
                         MagnetActive = false
                         CheckLevel()
-                        TP(CFrameMon)
+                        local distance = (CFrameMon.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                        if distance > 500 then
+                            TP(CFrameMon)
+                        end
                     end
                 end)
             end
